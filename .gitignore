@@ -1,0 +1,10 @@
+build/
+out/
+reference/*.flac
+reference/*.wav
+__pycache__/
+.venv/
+*.o
+0
+1
+*.png

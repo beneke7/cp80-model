@@ -16,11 +16,17 @@ CP80_REFERENCE_DIR=... .venv/bin/python tools/attack_probe.py  # attack-band dia
 CP80_REFERENCE_DIR=... .venv/bin/python tools/spectral_balance.py --notes 27 42
 CP80_BODY_GAIN=0 .venv/bin/python tools/render_lib.py out/model-lib-body  # string-only A/B
 CP80_REFERENCE_DIR=... .venv/bin/python tools/render_reference_match.py out/model-reference-matched
+build/demo out/demo-model-final-no-eq.wav                         # actual model demo
 .venv/bin/python tools/render_reference_demo.py out/demo-reference-peakmatched.wav
-CP80_DEMO_SAMPLE_DIR=out/model-reference-matched .venv/bin/python tools/render_reference_demo.py out/demo-model-peakmatched.wav
+.venv/bin/python tools/render_reference_demo.py out/demo-reference-inverse-volume.wav out/model-reference-matched/volume_match.csv
+.venv/bin/python tools/apply_light_eq.py out/demo-model-final-no-eq.wav out/demo-model-peakmatched.wav
 .venv/bin/python tools/evaluate_corpus.py --output out/corpus-eval
 .venv/bin/python tools/evaluate_demo.py --output out/demo-eval.csv
 ```
+
+`render_reference_demo.py` always renders reference samples; it never renders the model.
+The CSV argument only applies the model-derived inverse-volume scaling to that reference
+replay. Compare the actual `build/demo` output against that replay.
 
 **Read `AGENTS.md` before changing anything.** It records the physics invariants, which
 parameters are measured versus guessed, the open problems, and — importantly — five
@@ -35,7 +41,8 @@ optimizations and fitting approaches that were tried, measured, and found worse.
 | `tools/partials.py` | sequential partial tracker with running B estimate |
 | `tools/render_lib.py` | renders a sample library for A/B against the real thing |
 | `tools/render_reference_match.py` | renders every reference file with exact duration and per-file peak matching |
-| `tools/render_reference_demo.py` | replays the standalone demo score using the reference samples |
+| `tools/render_reference_demo.py` | replays the standalone demo score using reference samples (never the model) |
+| `tools/apply_light_eq.py` | optional, low-order chord-derived output trim; never part of the string engine |
 | `tools/fit_hammer.py` | gates one global contact exponent against PP/MP/F/FF band growth |
 | `tools/panel_demo.cpp` | renders the same phrase through four panel settings |
 | `tools/verify_stretch.cpp` | prints the applied Railsback curve vs measured anchors |

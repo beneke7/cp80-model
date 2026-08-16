@@ -53,7 +53,7 @@ named in `$CP80_ANCHORS`. Set `$CP80_REFERENCE_DIR` to use a reference corpus ou
 `reference/`; use `../GregSullivan.E-Pianos/CP80/Samples` for independent calibration
 and `../sample-library` only for regression checks.
 For a pickup-bandwidth sweep, set `CP80_PICKUP_LP` when running `build/analyze`; the
-production medium brilliance corner is 8.0 kHz, with LOW/HIGH scaled around it.
+production medium brilliance corner is 6.0 kHz, with LOW/HIGH scaled around it.
 For the contact experiment, set `CP80_WAVE_CONTACT=1 CP80_WAVE_Z=<scale>` when
 running `build/analyze`; it is opt-in and is not the default model path yet.
 For the hybrid hammer experiment, set `CP80_HAMMER_DAMPING=<s/m>`; zero is the

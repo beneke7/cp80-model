@@ -731,10 +731,10 @@ public:
         bqTreb.highShelf(float(fsHost), 3000.f, trebleDb);
     }
     // 0 = LOW, 1 = MEDIUM, 2 = HIGH. The CP-80 piezo buffer is wide-band; these
-    // switch positions are scaled from the measured/usable 8 kHz medium setting.
+    // switch positions are scaled from the corpus-matched 6 kHz medium setting.
     void setBrilliance(int level)
     {
-        static const float corner[3] = { 5867.f, 8000.f, 14667.f };
+        static const float corner[3] = { 4400.f, 6000.f, 11000.f };
         setPickupTone(corner[level < 0 ? 0 : (level > 2 ? 2 : level)], 32.f);
     }
     void setVolume(float g){ vol = g; }

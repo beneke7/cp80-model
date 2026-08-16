@@ -158,7 +158,7 @@ the bottom three; the rest were scaled. Do not present them as measured.
 |---|---|---|
 | Volume | — | `setVolume()` |
 | Tone: BASS / MIDDLE / TREBLE | — | `setTone()` — **corner freqs are plausible, not transcribed** |
-| BRILLIANCE: HIGH / MEDIUM / LOW | — | `setBrilliance(2/1/0)` → 14.7k / 8.0k / 5.9k |
+| BRILLIANCE: HIGH / MEDIUM / LOW | — | `setBrilliance(2/1/0)` → 11.0k / 6.0k / 4.4k |
 | Damper pedal | — | `setSustain()` |
 | PATCH OUT / IN | −20 dBm 600 Ω / 100 kΩ | downstream hardware, outside this model |
 | Line out | −20 dBm 600 Ω balanced | CP-80 electrical output |

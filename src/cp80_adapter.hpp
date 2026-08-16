@@ -39,6 +39,7 @@ public:
     void process(float* out, int n, const AdapterEvent* events = nullptr, int count = 0)
     {
         if (!out || n <= 0) return;
+        if (!events || count <= 0) count = 0;
         if (target.bassDb != applied.bassDb || target.midDb != applied.midDb ||
             target.trebleDb != applied.trebleDb) {
             engine.setTone(target.bassDb, target.midDb, target.trebleDb);

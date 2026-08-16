@@ -29,6 +29,7 @@ int main()
     float maxOffDifference = 0.0f;
     float maxSumError = 0.0f;
     float maxStereoDifference = 0.0f;
+    float maxDryLevel = 0.0f;
     constexpr float expectedSumScale = 2.0f - 0.30f;
     for (int i = 0; i < n; ++i) {
         const float l0 = dry.getSample(0, i);
@@ -37,11 +38,13 @@ int main()
         const float tr = trem.getSample(1, i);
         assert(std::isfinite(l0) && std::isfinite(l1));
         assert(std::isfinite(tl) && std::isfinite(tr));
+        maxDryLevel = std::max(maxDryLevel, std::fabs(l0));
         maxOffDifference = std::max(maxOffDifference, std::fabs(l0 - l1));
         maxSumError = std::max(maxSumError, std::fabs((tl + tr) - l0 * expectedSumScale));
         maxStereoDifference = std::max(maxStereoDifference, std::fabs(tl - tr));
     }
     assert(maxOffDifference < 1.0e-6f);
+    assert(maxDryLevel > 0.01f);
     assert(maxSumError < 2.0e-5f);
     assert(maxStereoDifference > 1.0e-7f);
     return 0;

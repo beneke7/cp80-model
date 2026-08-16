@@ -7,6 +7,9 @@
 namespace {
 constexpr float kPi = 3.14159265358979323846f;
 constexpr float kTwoPi = 2.0f * kPi;
+// The calibrated engine emits its raw common-voltage scale.  Offline renders
+// normalise for comparison; the plugin needs a fixed line-output calibration.
+constexpr float kLineOutputGain = 44.0f; // +32.9 dB, before no further limiting
 }
 
 juce::AudioProcessorValueTreeState::ParameterLayout
@@ -137,19 +140,19 @@ void CP80PluginProcessor::renderTremolo(float* left, float* right, int numSample
     for (int i = 0; i < numSamples; ++i) {
         const float dry = left[i];
         if (!enabled) {
-            left[i] = dry;
             right[i] = dry;
-            continue;
+        } else {
+            tremoloPhase += inc;
+            if (tremoloPhase >= kTwoPi)
+                tremoloPhase -= kTwoPi;
+            const float c = std::cos(tremoloPhase);
+            const float halfDepth = 0.5f * depth;
+            const float centre = 1.0f - halfDepth;
+            left[i] = dry * (centre + halfDepth * c);
+            right[i] = dry * (centre - halfDepth * c);
         }
-
-        tremoloPhase += inc;
-        if (tremoloPhase >= kTwoPi)
-            tremoloPhase -= kTwoPi;
-        const float c = std::cos(tremoloPhase);
-        const float halfDepth = 0.5f * depth;
-        const float centre = 1.0f - halfDepth;
-        left[i] = dry * (centre + halfDepth * c);
-        right[i] = dry * (centre - halfDepth * c);
+        left[i] *= kLineOutputGain;
+        right[i] *= kLineOutputGain;
     }
 }
 

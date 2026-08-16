@@ -62,8 +62,9 @@ static constexpr float kUnisonCentsMin = 0.4f;
 static constexpr float kUnisonCentsMax = 2.0f;
 static constexpr float kPolarHz     = 0.0f;  // single string, two transverse planes
 static constexpr int   kBodyModes   = 4;    // shared cast/case resonances
-static constexpr float kBodyDrive   = 0.0075f; // corpus-calibrated hammer-to-frame/piezo coupling
+static constexpr float kBodyDrive   = 0.008625f; // corpus-calibrated hammer-to-frame/piezo coupling
 static constexpr float kBodyMassRef = 0.01224f; // total C4 string mass; normalizes body drive
+static constexpr float kBodyVelocityExponent = 1.25f; // impact-weighted speed law
 static constexpr float kBridgeMassRef = 0.00612f; // one C4 string; normalizes T/L readout
 static constexpr float kBridgeF0Ref   = 261.626f; // C4; keeps the correction unity at C4
 static constexpr float kHammerRateRef = 0.71f; // MIDI velocity at the fitted forte K
@@ -768,11 +769,13 @@ public:
         v->hFastScale = hammerFacingScale;
         v->hFastTau = hammerFacingTau;
         v->hFastR = v->hFastTau > 0.f ? std::exp(-v->hT / v->hFastTau) : 1.f;
-        // The body bank is driven by hammer momentum. Its resonators are normalized
-        // to unit peak response in prepareBody(), so bodyGain is an ordinary mix.
+        // The body bank is driven by an impact-weighted hammer speed. Its resonators
+        // are normalized to unit peak response in prepareBody(), so bodyGain is an
+        // ordinary mix.
         const float bodyMassScale = sp.mass / kBodyMassRef;
         const float bodyPolarity = (note & 1) ? -1.f : 1.f;
-        bodyPending += bodyPolarity * bodyGain * kBodyDrive * sp.hammerM * vHammer * bodyMassScale;
+        const float bodySpeed = vRef * std::pow(vHammer / vRef, kBodyVelocityExponent);
+        bodyPending += bodyPolarity * bodyGain * kBodyDrive * sp.hammerM * bodySpeed * bodyMassScale;
         v->note = note;
         v->waveContact = waveContact;
         v->waveZ *= waveZScale;

@@ -230,10 +230,11 @@ manual pp. 14–15) rather than treated as an exact circuit reconstruction.
    humps are broad (Q ≈ 3–5), so it is not sympathetic string ringing either. The
    production `CP80_BODY_GAIN` path adds four shared low-Q resonators near
    32, 38, 80, and 170 Hz. The weak 32 Hz mode has the slower low-end decay; the other
-   three use one shared fitted decay (sigma 8) to cover the useful early body envelope. It is driven by hammer impact momentum, the low-frequency limit
+   three use one shared fitted decay (sigma 8) to cover the useful early body envelope. It is driven by an impact-weighted hammer speed, the low-frequency limit
    of integrating the transmitted strike force, and is rendered before the common pickup
-   chain. Each mode is normalized to unit peak response, hammer momentum is scaled by a
-   single fitted frame/piezo coupling, with weights **0.20 / 1.0 / 0.30 / 0.48** (32 / 38 / 80 / 170 Hz) and a default
+   chain. Each mode is normalized to unit peak response, the speed law uses exponent
+   **1.25** (anchored at the fitted forte rate), and its scale is set by one fitted
+   frame/piezo coupling, with weights **0.20 / 1.0 / 0.30 / 0.48** (32 / 38 / 80 / 170 Hz) and a default
    body mix of **1**. Its impulse is scaled by total string mass and note polarity. The reference
    flacs are peak-normalised per file, so only the relative band level and decay are used;
    no per-note body gains are introduced.

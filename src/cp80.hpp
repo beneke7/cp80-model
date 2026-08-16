@@ -129,19 +129,19 @@ struct Anchor { int note; float B, strike, b1, b3, hM, hK, hP, damp, gain, mass,
 // EQ proxy. The bass string masses use the register-dependent M_H/M_s ratios from
 // Chaigne & Askenfelt, which also puts the implied string tension in the piano range.
 // The K anchors retain the physical bass law, harden through the A#2--C4 transition,
-// then return toward the common urethane/leather facing stiffness. The b3 curve is
-// reduced through MIDI 84 so resolved mid/high partials do not disappear too quickly.
+// then return toward the common urethane/leather facing stiffness. The b3 curve now
+// rises through the upper register to match the measured early high-mode falloff.
 static Anchor kAnchors[] = {
     // note   B        strike  b1     b3        hM       hK        hP    damp  gain  mass     hW      twin   slowW
     // b3 follows one register curve: the bass correction matches 3.3--3.6 kHz,
-    // while the mid-register anchors preserve the measured harmonic aftersound.
+    // while the upper anchors shorten the measured 5--300 ms high-mode tail.
     {  21, 0.002065f, 0.125f, 0.225f,  4.5e-08f, 0.009f, 6.00e+08f, 2.00f, 12.0f, 1.00f, 0.099f,   0.010f, 1.25f, 0.45f },
     {  36, 0.000246f, 0.12f, 0.128f,  1.25e-08f, 0.0075f,2.77e+08f, 2.00f, 16.0f, 0.95f, 0.0533f, 0.010f, 1.25f, 0.45f },
     {  48, 0.0002389f, 0.115f, 0.128f, 1.0e-08f, 0.006f, 3.60e+08f, 2.00f, 20.0f, 0.92f, 0.0182f, 0.015f, 1.25f, 0.45f },
     {  60, 0.0002811f, 0.108f, 0.165f, 2.0e-09f, 0.0046f,2.00e+08f, 2.00f, 26.0f, 0.88f, 0.00612f, 0.020f, 2.7f, 0.45f },
-    {  72, 0.0005622f, 0.095f, 0.2357f, 1.5e-09f, 0.0036f,5.41e+07f, 2.00f, 34.0f, 0.90f, 0.002635f, 0.020f,2.6f,0.45f },
-    {  84, 0.002108f, 0.14f, 0.3771f, 1.25e-09f, 0.003f, 5.21e+07f, 2.00f, 44.0f, 0.95f, 0.0012f, 0.019f, 2.4f, 0.45f },
-    { 108, 0.008433f, 0.16f, 0.6678f, 2.0e-09f, 0.0026f,5.00e+07f, 2.00f, 60.0f, 0.95f, 0.00045f,0.0128f,2.2f,0.45f },
+    {  72, 0.0005622f, 0.095f, 0.2357f, 2.5e-09f, 0.0036f,5.41e+07f, 2.00f, 34.0f, 0.90f, 0.002635f, 0.020f,2.6f,0.45f },
+    {  84, 0.002108f, 0.14f, 0.3771f, 3.5e-09f, 0.003f, 5.21e+07f, 2.00f, 44.0f, 0.95f, 0.0012f, 0.019f, 2.4f, 0.45f },
+    { 108, 0.008433f, 0.16f, 0.6678f, 4.0e-09f, 0.0026f,5.00e+07f, 2.00f, 60.0f, 0.95f, 0.00045f,0.0128f,2.2f,0.45f },
 };
 static constexpr int kNumAnchors = int(sizeof(kAnchors) / sizeof(Anchor));
 
@@ -703,7 +703,7 @@ public:
         // The CP-80 puts out 78 mV max into 600 ohm; it is a low-drive, near-linear
         // chain, so this is genuinely just bandwidth, not distortion.
         setBrilliance(1);                     // MEDIUM
-        setTone(0.f, 0.f, 0.f);               // no corrective EQ in the production path
+        setTone(0.f, -3.f, 0.f);               // measured default panel voicing
         prepareBody();
         for (auto& v : voices) v = Voice{};
         stampCounter = 0;
@@ -731,10 +731,10 @@ public:
         bqTreb.highShelf(float(fsHost), 3000.f, trebleDb);
     }
     // 0 = LOW, 1 = MEDIUM, 2 = HIGH. The CP-80 piezo buffer is wide-band; these
-    // switch positions are scaled from the corpus-matched 6 kHz medium setting.
+    // switch positions are scaled from the corpus-matched 4.4 kHz medium setting.
     void setBrilliance(int level)
     {
-        static const float corner[3] = { 4400.f, 6000.f, 11000.f };
+        static const float corner[3] = { 3300.f, 4400.f, 8000.f };
         setPickupTone(corner[level < 0 ? 0 : (level > 2 ? 2 : level)], 32.f);
     }
     void setVolume(float g){ vol = g; }

@@ -160,15 +160,15 @@ the bottom three; the rest were scaled. Do not present them as measured.
 |---|---|---|
 | Volume | — | `setVolume()` |
 | Tone: BASS / MIDDLE / TREBLE | — | `setTone()` — **corner freqs are plausible, not transcribed** |
-| BRILLIANCE: HIGH / MEDIUM / LOW | — | `setBrilliance(2/1/0)` → 11.0k / 6.0k / 4.4k |
+| BRILLIANCE: HIGH / MEDIUM / LOW | — | `setBrilliance(2/1/0)` → 8.0k / 4.4k / 3.3k |
 | Damper pedal | — | `setSustain()` |
 | PATCH OUT / IN | −20 dBm 600 Ω / 100 kΩ | downstream hardware, outside this model |
 | Line out | −20 dBm 600 Ω balanced | CP-80 electrical output |
 
-Panel controls are flat and brilliance = MEDIUM when explicitly set to those values. The
-production `prepare()` path has no hidden corrective EQ. The tone-stack RC values should
-be transcribed from the CP-70B overall circuit diagram (owner's manual pp. 14–15) rather
-than left as the current guesses.
+The production path uses MEDIUM brilliance with the existing tone stack at `0 / -3 / 0`
+dB (bass / mid / treble), selected by a full-corpus A/B and listening pass. The tone-stack
+RC values should still be transcribed from the CP-70B overall circuit diagram (owner's
+manual pp. 14–15) rather than treated as an exact circuit reconstruction.
 
 ## 4. Open problems (ranked)
 
@@ -235,12 +235,11 @@ than left as the current guesses.
    flacs are peak-normalised per file, so only the relative band level and decay are used;
    no per-note body gains are introduced.
 
-4b. **Treble decay is 2–3× too fast above ~MIDI 95, and reference data for it exists.**
-   Total-RMS decay, real vs model: MIDI 95 25.0 / 19.9 dB/s, 97 18.5 / 24.3, **102 13.7 /
-   40.7**. The `84` and `108` anchors were scaled, never fitted — but the Greg Sullivan
-   set has forte samples at 85, 88, 91, 95, 97, 102 and 107. `cal.py` now maps measured
-   forte notes through the anchor table, but the high-register windows remain floor-
-   limited and need a dedicated decay estimator before their numbers are promoted.
+4b. **The upper damping law was underfit above ~MIDI 95.** Total-RMS decay, real vs the
+   old model: MIDI 95 25.0 / 19.9 dB/s, 97 18.5 / 24.3, **102 13.7 / 40.7**. A smooth
+   increase of the 72/84/108 `b3` anchors now reduces the early high-mode persistence;
+   the remaining high-register windows are still floor-limited and need a dedicated
+   decay estimator before further damping changes are promoted.
 
 5. **Default contact law has no hysteresis.** Pure `K η^p` is lossless. The opt-in
    Hunt-Crossley-style term is available for route-3 sweeps, but its fitted value is not

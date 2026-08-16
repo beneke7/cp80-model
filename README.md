@@ -54,7 +54,7 @@ named in `$CP80_ANCHORS`. Set `$CP80_REFERENCE_DIR` to use a reference corpus ou
 `reference/`; use `../GregSullivan.E-Pianos/CP80/Samples` for independent calibration
 and `../sample-library` only for regression checks.
 For a pickup-bandwidth sweep, set `CP80_PICKUP_LP` when running `build/analyze`; the
-production medium brilliance corner is 6.0 kHz, with LOW/HIGH scaled around it.
+production medium brilliance corner is 4.4 kHz, with LOW/HIGH scaled around it.
 For a tone-stack sweep, set `CP80_TONE_BASS`, `CP80_TONE_MID`, and/or
 `CP80_TONE_TREBLE`; these are diagnostic overrides for the existing panel EQ.
 For the contact experiment, set `CP80_WAVE_CONTACT=1 CP80_WAVE_Z=<scale>` when
@@ -70,7 +70,8 @@ with weights `1.0 / 0.30 / 0.48`. Its impulse follows total string mass and alte
 note polarity so dense chords do not add one shared mode coherently.
 For demo A/B, `CP80_BODY_GAIN` is also read by `build/demo`; the production coupling is
 calibrated in `kBodyDrive`, while this control remains a reversible mix diagnostic.
-The production hammer uses `p=2`, a global impact-rate stiffness law `q=2.25`, and a
+The default panel voicing is the existing tone stack at `0 / -3 / 0` dB (bass / mid /
+treble), selected by the corpus/ear A/B. The production hammer uses `p=2`, a global impact-rate stiffness law `q=2.25`, and a
 global `0.70` stiffness scale for the softer urethane/leather facing; set
 `CP80_HAMMER_RATE_P` or `CP80_HAMMER_SCALE` for diagnostic sweeps. Bichord beating keeps
 the measured `0.4--2.0` cent note-specific split, with a `2.0` fast-partner bridge weight
@@ -90,7 +91,8 @@ register-dependent string masses and a physical hammer width; the hammer candida
 uses one global `p=2` with a smooth `hK` register curve, a 0.70 stiffness scale, and
 global rate-hardening `q=2.25`. At the SFZ F-layer midpoint (`v=0.728`), contact is
 4.99 ms on D#1, 3.51 ms on F#2 and 1.85 ms on C4.
-The `b3` curve is raised smoothly through MIDI 72 to match the measured mid-band decay;
+The `b3` curve rises smoothly through the upper register to match the measured early
+high-mode falloff;
 the energy-preserving `n=40` mode
 truncation removes the artificial note-dependent 11 dB ladder step. The upper-register
 readout gain stays near unity so high notes do not disappear into the shared frame

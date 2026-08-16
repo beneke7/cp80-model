@@ -19,7 +19,7 @@ The adapter owns only host-facing state:
 ```text
 prepare(sampleRate, maxBlock)
 for each audio block:
-    split at MIDI event sample offsets
+    split at every MIDI event sample offset (mandatory)
     apply note / pedal events
     engine.process(output, segmentLength)
 ```
@@ -27,6 +27,13 @@ for each audio block:
 `prepare` is the only allocation/setup phase. The audio callback must contain no
 allocation, lock, file I/O, logging, or parameter discovery. Parameter changes
 are converted to simple smoothed values before they reach the engine.
+`process` accepts zero-length calls and safely chunks a block larger than the
+declared maximum; event offsets remain exact when the host block size changes.
+
+The final format wrapper must own the lock-free parameter snapshot. The audio
+thread then passes one block-local copy to this boundary; coefficient updates
+happen at most once per block. Brilliance is a real three-position panel switch
+and may be crossfaded over one block to avoid a zipper.
 
 The first public controls are intentionally small:
 
@@ -54,7 +61,7 @@ keeps rendering, calibration, and regression tests independent of the wrapper.
 Before shipping a format adapter:
 
 1. Offline adapter render matches `build/demo` for the same event stream.
-2. 44.1, 48, and 96 kHz; small and large blocks; no non-finite samples.
+2. 44.1, 48, and 96 kHz; blocks of 1, 17, 128, 2048, and oversized blocks; no non-finite samples.
 3. Sample-offset MIDI events do not move when the host block size changes.
 4. Sustain, repeated notes, voice stealing, and reset are deterministic.
 5. A dense chord remains comfortably real-time on the existing `make check`

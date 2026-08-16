@@ -235,7 +235,8 @@ manual pp. 14–15) rather than treated as an exact circuit reconstruction.
    chain. Each mode is normalized to unit peak response, the speed law uses exponent
    **1.25** (anchored at the fitted forte rate), and its scale is set by one fitted
    frame/piezo coupling, with weights **0.20 / 1.0 / 0.30 / 0.48** (32 / 38 / 80 / 170 Hz) and a default
-   body mix of **1**. Its impulse is scaled by total string mass and note polarity. The reference
+body mix of **1**. Its impulse is scaled by total string mass and gets a deterministic
+0--15 ms note-dependent frame-arrival delay. The reference
    flacs are peak-normalised per file, so only the relative band level and decay are used;
    no per-note body gains are introduced.
 
@@ -267,6 +268,9 @@ manual pp. 14–15) rather than treated as an exact circuit reconstruction.
 | `fastPow` via exp2(p·log2 x) with a linear mantissa approximation | **14.8% error.** Unacceptable for a force law. Reverted to `std::pow`. |
 | Residual static compliance for truncated modes | No measurable effect on contact time. |
 | Nelder-Mead on point-sampled decay envelopes | **Moved zero distance in 261 evaluations.** Beating nulls make the loss surface noise. Use the peak-following upper envelope in `cal.py`. |
+| Alternating body impulse polarity by MIDI note | Per-note levels looked fine, but balanced chords cancelled the shared frame mode by ~15 dB. Replaced with a deterministic 0--15 ms note-dependent arrival delay. |
+| Raising the 48/60 strike anchors as a smooth midrange curve | Full 81-sample priority worsened 11.56 -> 11.68 dB; the reference comb is not explained by one smooth strike curve. Reverted. |
+| Raising bass fast-partner damping 1.25 -> 4.0 | D#1 H2--H4 moved only a few dB and the missing sustain growl remained. Reverted; do not use it as a global correction. |
 
 **Optimizations that did work:** folded halfband decimator (12×, half the taps are
 exactly zero); pickup filter moved to host rate as one biquad (0.937 → ~0.10 µs/blk);

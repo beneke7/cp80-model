@@ -59,13 +59,6 @@ def measure(x, sr):
             result[(section, f"mod_{lo:g}_{hi:g}_db_rms")] = float(
                 np.std(edb - trend))
 
-        z = x[a:b] * np.hanning(max(b - a, 2))
-        spectrum = np.abs(np.fft.rfft(z)) ** 2
-        freq = np.fft.rfftfreq(len(z), 1.0 / sr)
-        keep = (freq >= 1000.0) & (freq < 8000.0)
-        power = np.maximum(spectrum[keep], EPS)
-        result[(section, "flatness_1k_8k_db")] = float(
-            10.0 * np.log10(np.exp(np.mean(np.log(power))) / np.mean(power)))
     return result
 
 

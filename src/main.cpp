@@ -1,10 +1,11 @@
 // =====================================================================================
-//  main.cpp -- demo host for cp80.hpp
+//  main.cpp -- demo host for the SDK-free CP-80 adapter
 //
-//  build:  g++ -O3 -march=native -ffast-math -std=c++17 main.cpp -o cp80demo
+//  build:  g++ -O3 -march=native -std=c++17 main.cpp -o cp80demo
 //  run:    ./cp80demo out.wav
 // =====================================================================================
-#include "cp80.hpp"
+#include "cp80_adapter.hpp"
+#include "demo_score.hpp"
 #include <algorithm>
 #include <chrono>
 #include <cstdio>
@@ -37,63 +38,44 @@ int main(int argc, char** argv)
     const int    BLOCK = 128;
     const double SECS  = 11.0;
 
-    cp80::CP80 piano;
+    cp80::CP80Adapter piano;
+    cp80::AdapterParameters parameters;
+    if (const char* md = std::getenv("CP80_TONE_MID")) {
+        parameters.midDb = float(std::atof(md));
+        if (const char* bass = std::getenv("CP80_TONE_BASS")) parameters.bassDb = float(std::atof(bass));
+        if (const char* treble = std::getenv("CP80_TONE_TREBLE")) parameters.trebleDb = float(std::atof(treble));
+    }
+    piano.setParameters(parameters);
     piano.prepare(SR, BLOCK);
     if (const char* bg = std::getenv("CP80_BODY_GAIN"))
-        piano.setBodyGain(float(std::atof(bg)));
-    if (const char* md = std::getenv("CP80_TONE_MID")) {
-        const float bass = std::getenv("CP80_TONE_BASS") ? float(std::atof(std::getenv("CP80_TONE_BASS"))) : 0.f;
-        const float treble = std::getenv("CP80_TONE_TREBLE") ? float(std::atof(std::getenv("CP80_TONE_TREBLE"))) : 0.f;
-        piano.setTone(bass, float(std::atof(md)), treble);
-    }
+        piano.setBodyGainForDiagnostics(float(std::atof(bg)));
 
-    // A little Fm9 -> Bb13 -> Ebmaj9 thing, plus a single hard-struck low note at the
-    // end so you can hear the bass inharmonicity on its own.
-    struct Ev { double t; bool on; int note; float vel; };
-    std::vector<Ev> score;
-    auto chord = [&](double t, double dur, std::initializer_list<int> ns, float v) {
-        int i = 0;
-        for (int n : ns) {
-            score.push_back({ t + i * 0.012, true,  n, v });
-            score.push_back({ t + dur,       false, n, 0.f });
-            ++i;
-        }
-    };
-    // Classic CP-80 register: mid, open voicings, nothing muddy below C3.
-    chord(0.20, 2.0, { 48, 55, 64, 67, 72, 76 }, 0.55f);   // Cmaj9    C3 G3 E4 G4 C5 E5
-    chord(2.35, 2.0, { 45, 52, 64, 69, 72, 74 }, 0.50f);   // Am11
-    chord(4.50, 2.0, { 46, 53, 62, 65, 69, 77 }, 0.46f);   // Bbmaj7#11
-    chord(6.65, 2.6, { 43, 50, 59, 65, 67, 74 }, 0.42f);   // G7sus
-    // a short arpeggio up top so the upper-register decay is audible on its own
-    for (int i = 0; i < 8; ++i) {
-        static const int up[8] = { 72, 76, 79, 84, 88, 91, 84, 79 };
-        // Keep the top-run demo voices on the reference MP layer; at 0.40 they
-        // were needlessly quieter than the inverse-volume comparison.
-        score.push_back({ 6.90 + i * 0.16, true,  up[i], 0.47f });
-        score.push_back({ 7.30 + i * 0.16, false, up[i], 0.f   });
-    }
-    std::sort(score.begin(), score.end(), [](const Ev& a, const Ev& b) { return a.t < b.t; });
+    const auto score = cp80::makeDemoScore(SR);
 
     const int total = int(SECS * SR);
     std::vector<float> outBuf(size_t(total), 0.f);
     std::vector<float> blk(BLOCK);
+    std::vector<cp80::AdapterEvent> blockEvents;
+    blockEvents.reserve(score.size());
     size_t ev = 0;
     int peakVoices = 0, peakModes = 0;
 
     const auto t0 = std::chrono::high_resolution_clock::now();
     for (int pos = 0; pos < total; pos += BLOCK) {
         const int n = std::min(BLOCK, total - pos);
-        const double tNow = double(pos) / SR;
-        while (ev < score.size() && score[ev].t <= tNow) {
-            if (score[ev].on) piano.noteOn(score[ev].note, score[ev].vel);
-            else              piano.noteOff(score[ev].note);
+        blockEvents.clear();
+        while (ev < score.size()) {
+            if (score[ev].sample >= pos + n) break;
+            blockEvents.push_back({score[ev].sample - pos,
+                score[ev].on ? cp80::AdapterEventType::NoteOn : cp80::AdapterEventType::NoteOff,
+                score[ev].note, score[ev].velocity});
             ++ev;
         }
         std::memset(blk.data(), 0, sizeof(float) * size_t(n));
-        piano.process(blk.data(), n);
+        piano.process(blk.data(), n, blockEvents.data(), int(blockEvents.size()));
         std::memcpy(&outBuf[size_t(pos)], blk.data(), sizeof(float) * size_t(n));
         peakVoices = std::max(peakVoices, piano.activeVoices());
-        peakModes  = std::max(peakModes,  piano.activeModes());
+        peakModes  = std::max(peakModes, piano.activeModes());
     }
     const auto t1 = std::chrono::high_resolution_clock::now();
 

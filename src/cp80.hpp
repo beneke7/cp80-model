@@ -60,6 +60,7 @@ static constexpr int   kOversample  = 2;     // set 4 if you want tighter contac
 // different unisons do not all sweep the same comb.
 static constexpr float kUnisonCentsMin = 0.4f;
 static constexpr float kUnisonCentsMax = 2.0f;
+static constexpr float kBodyDelayMs   = 15.0f; // note-dependent frame arrival spread
 static constexpr float kPolarHz     = 0.0f;  // single string, two transverse planes
 static constexpr int   kBodyModes   = 4;    // shared cast/case resonances
 static constexpr float kBodyDrive   = 0.008625f; // corpus-calibrated hammer-to-frame/piezo coupling
@@ -180,10 +181,14 @@ inline float stretchCents(int note)
 
 inline float lerpf(float a, float b, float t) { return a + (b - a) * t; }
 inline float lerpLog(float a, float b, float t) { return std::exp(lerpf(std::log(a), std::log(b), t)); }
-inline float unisonCentsForNote(int note)
+inline float noteHash(int note)
 {
     const float phase = float(note) * 0.61803398875f;
-    return kUnisonCentsMin + (kUnisonCentsMax - kUnisonCentsMin) * (phase - std::floor(phase));
+    return phase - std::floor(phase);
+}
+inline float unisonCentsForNote(int note)
+{
+    return kUnisonCentsMin + (kUnisonCentsMax - kUnisonCentsMin) * noteHash(note);
 }
 
 // Load anchor overrides from a text file: "index B strike b1 b3 hM hK hP damp gain
@@ -705,8 +710,9 @@ public:
     {
         fsHost = hostSampleRate;
         fsInt  = hostSampleRate * kOversample;
-        osBuf.assign(size_t(maxBlock) * kOversample + 8, 0.f);
-        deci.prepare(maxBlock);
+        maxBlockSize = std::max(1, maxBlock);
+        osBuf.assign(size_t(maxBlockSize) * kOversample + 8, 0.f);
+        deci.prepare(maxBlockSize);
 
         // pickup / preamp chain: piezo -> JFET buffer -> preamp.
         // The CP-80 puts out 78 mV max into 600 ohm; it is a low-drive, near-linear
@@ -773,9 +779,14 @@ public:
         // are normalized to unit peak response in prepareBody(), so bodyGain is an
         // ordinary mix.
         const float bodyMassScale = sp.mass / kBodyMassRef;
-        const float bodyPolarity = (note & 1) ? -1.f : 1.f;
         const float bodySpeed = vRef * std::pow(vHammer / vRef, kBodyVelocityExponent);
-        bodyPending += bodyPolarity * bodyGain * kBodyDrive * sp.hammerM * bodySpeed * bodyMassScale;
+        const float bodyImpulse = bodyGain * kBodyDrive * sp.hammerM * bodySpeed * bodyMassScale;
+        if (!bodySchedule.empty()) {
+            const size_t delay = std::min(
+                bodyDelaySamples,
+                size_t(noteHash(note) * float(bodyDelaySamples + 1)));
+            bodySchedule[(bodyCursor + delay) % bodySchedule.size()] += bodyImpulse;
+        }
         v->note = note;
         v->waveContact = waveContact;
         v->waveZ *= waveZScale;
@@ -794,7 +805,19 @@ public:
 
     void process(float* __restrict out, int n)
     {
+        if (!out || n <= 0) return;
         ScopedFTZ ftz;
+        while (n > 0) {
+            const int chunk = std::min(n, maxBlockSize);
+            processBlock(out, chunk);
+            out += chunk;
+            n -= chunk;
+        }
+    }
+
+private:
+    void processBlock(float* __restrict out, int n)
+    {
         const int nOS = n * kOversample;
         std::memset(osBuf.data(), 0, sizeof(float) * size_t(nOS));
 
@@ -816,9 +839,9 @@ public:
             v = bqTreb.process(bqMid.process(bqBass.process(v)));
             out[k] = v * vol;
         }
-
     }
 
+public:
     void setTuneCents(float c) { tuneCents = c; }
     // global felt-stiffness multiplier: >1 = harder felt, shorter contact, brighter attack
     void setHammerScale(float g) { hammerScale = g; }
@@ -877,14 +900,17 @@ private:
             bodyB[i] = baseB / std::max(peak, 1e-30f);
             bodyY1[i] = bodyY2[i] = 0.f;
         }
-        bodyPending = 0.f;
+        bodyDelaySamples = size_t(kBodyDelayMs * 0.001f * float(fsHost) + 0.5f);
+        bodySchedule.assign(bodyDelaySamples + 1, 0.f);
+        bodyCursor = 0;
     }
 
     void renderBody(float* __restrict out, int n)
     {
-        float impulse = bodyPending;
-        bodyPending = 0.f;
+        if (bodySchedule.empty()) return;
         for (int k = 0; k < n; ++k) {
+            const float impulse = bodySchedule[bodyCursor];
+            bodySchedule[bodyCursor] = 0.f;
             float acc = 0.f;
             for (int i = 0; i < kBodyModes; ++i) {
                 const float y = bodyA1[i] * bodyY1[i] + bodyA2[i] * bodyY2[i]
@@ -894,7 +920,7 @@ private:
                 acc += bodyW[i] * y;
             }
             out[k] += acc;
-            impulse = 0.f;
+            if (++bodyCursor == bodySchedule.size()) bodyCursor = 0;
         }
     }
 
@@ -902,12 +928,16 @@ private:
     {
         for (auto& v : voices) if (!v.active) return &v;
         Voice* best = &voices[0];
-        for (auto& v : voices) if (!v.held && v.stamp < best->stamp) best = &v;
+        for (auto& v : voices) {
+            if ((!v.held && best->held) ||
+                (v.held == best->held && v.stamp < best->stamp)) best = &v;
+        }
         return best;
     }
 
     Voice   voices[kMaxVoices];
     std::vector<float> osBuf;
+    int    maxBlockSize = 1;
     Decimator2x deci;
 
     double fsHost = 48000.0, fsInt = 96000.0;
@@ -917,7 +947,9 @@ private:
     float  hammerFacingScale = 0.f, hammerFacingTau = 0.f;
     float  strikeOverride = 0.f, hammerWidthOverride = 0.f, vol = 1.f;
     float  bodyA1[kBodyModes]{}, bodyA2[kBodyModes]{}, bodyB[kBodyModes]{}, bodyW[kBodyModes]{};
-    float  bodyY1[kBodyModes]{}, bodyY2[kBodyModes]{}, bodyPending = 0.f, bodyGain = 1.f;
+    float  bodyY1[kBodyModes]{}, bodyY2[kBodyModes]{}, bodyGain = 1.f;
+    std::vector<float> bodySchedule;
+    size_t bodyCursor = 0, bodyDelaySamples = 0;
     bool   waveContact = false;
     float  waveZScale = 1.f;
     float* traceBuffer = nullptr;

@@ -12,6 +12,7 @@ make contact_probe         # internal hammer-force trace
 make pulse_probe           # prescribed-pulse modal diagnostic
 make fit_pulse             # fit an asymmetric force pulse through the modal bank
 make fit_hybrid            # fit opt-in contact impedance/loss against attack spectra
+make adapter_render        # render the canonical score through the host-neutral adapter
 CP80_REFERENCE_DIR=... .venv/bin/python tools/attack_probe.py  # attack-band diagnostic
 CP80_REFERENCE_DIR=... .venv/bin/python tools/spectral_balance.py --notes 27 42
 CP80_BODY_GAIN=0 .venv/bin/python tools/render_lib.py out/model-lib-body  # string-only A/B
@@ -38,6 +39,8 @@ optimizations and fitting approaches that were tried, measured, and found worse.
 | file | |
 |---|---|
 | `src/cp80.hpp` | the whole engine; `kAnchors` is the instrument |
+| `src/cp80_adapter.hpp` | SDK-free sample-accurate host boundary |
+| `src/demo_score.hpp` | canonical event stream shared by demo and adapter checks |
 | `src/main.cpp` | standalone demo host |
 | `PLUGIN.md` | minimal real-time plugin boundary and acceptance checks |
 | `tools/cal.py` | fixed-point calibration against reference recordings |
@@ -60,7 +63,9 @@ optimizations and fitting approaches that were tried, measured, and found worse.
 | `tools/attack_probe.py` | separates early high-frequency attack from later decay |
 | `tools/spectral_balance.py` | fixed-window band energy and sixth-order Butterworth decay check |
 | `tools/evaluate_corpus.py` | multicore 81-sample scorecard with validity gates and grouped summaries |
-| `tools/evaluate_demo.py` | repeatable chord/demo body, spectral-flatness, and modulation scorecard |
+| `tools/evaluate_demo.py` | repeatable chord/demo body and modulation scorecard |
+| `tools/adapter_render.cpp` | offline adapter render using the canonical event stream |
+| `tools/adapter_check.cpp` | block-size invariance and host-boundary regression |
 | `tools/fit_strike.py` | estimates per-note strike position from harmonic-comb nulls; diagnostic only |
 
 Calibration iterates without recompiling: `analyze` reads anchor overrides from the file
@@ -82,7 +87,7 @@ The default body mix is `1`; set `CP80_BODY_GAIN=0` for the string-only model. T
 body path adds four normalized shared low-Q resonators near 32, 38, 80, and 170 Hz.
 The weak 32 Hz mode has the slower measured low-end decay; the weights are
 `0.20 / 1.0 / 0.30 / 0.48` (32 / 38 / 80 / 170 Hz). Its impulse follows total string
-mass and alternates note polarity so dense chords do not add one shared mode coherently.
+mass and gets a deterministic 0--15 ms note-dependent arrival delay so dense chords do not add one shared mode coherently.
 For demo A/B, `CP80_BODY_GAIN` is also read by `build/demo`; the production coupling is
 calibrated in `kBodyDrive` with an impact-weighted speed exponent of `1.25`, while this
 control remains a reversible mix diagnostic.

@@ -17,6 +17,7 @@ CP80_REFERENCE_DIR=... .venv/bin/python tools/spectral_balance.py --notes 27 42
 CP80_BODY_GAIN=0 .venv/bin/python tools/render_lib.py out/model-lib-body  # string-only A/B
 CP80_REFERENCE_DIR=... .venv/bin/python tools/render_reference_match.py out/model-reference-matched
 .venv/bin/python tools/render_reference_demo.py out/demo-reference-peakmatched.wav
+CP80_DEMO_SAMPLE_DIR=out/model-reference-matched .venv/bin/python tools/render_reference_demo.py out/demo-model-peakmatched.wav
 .venv/bin/python tools/evaluate_corpus.py --output out/corpus-eval
 ```
 

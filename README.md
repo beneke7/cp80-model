@@ -61,6 +61,7 @@ optimizations and fitting approaches that were tried, measured, and found worse.
 | `tools/spectral_balance.py` | fixed-window band energy and sixth-order Butterworth decay check |
 | `tools/evaluate_corpus.py` | multicore 81-sample scorecard with validity gates and grouped summaries |
 | `tools/evaluate_demo.py` | repeatable chord/demo body, spectral-flatness, and modulation scorecard |
+| `tools/fit_strike.py` | estimates per-note strike position from harmonic-comb nulls; diagnostic only |
 
 Calibration iterates without recompiling: `analyze` reads anchor overrides from the file
 named in `$CP80_ANCHORS`. Set `$CP80_REFERENCE_DIR` to use a reference corpus outside

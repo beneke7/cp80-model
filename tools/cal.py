@@ -1,5 +1,9 @@
-import subprocess, numpy as np, soundfile as sf, os
+import os, re, subprocess
 from concurrent.futures import ThreadPoolExecutor
+from pathlib import Path
+
+import numpy as np
+import soundfile as sf
 from spectral_balance import band_sigmas
 def load(p):
     x,sr=sf.read(p); x=np.asarray(x,float); return (x.mean(1) if x.ndim>1 else x),sr
@@ -52,14 +56,22 @@ for m,p in REF.items():
                 sigma_2k4k=float(np.nanmedian(sigmas[2:4])))
     d=tgt[m]; print(f"ref {m}: sigma_slow={d['sig_slow']:.3f}  sigma_fast={d['sig_fast']:.3f}  ratio={d['sig_fast']/d['sig_slow']:.1f}  tilt={ti:.1f}  B={B:.2e}")
 
+def load_anchors():
+    """Read kAnchors so the fitter cannot silently drift from the engine."""
+    source = Path(__file__).resolve().parents[1] / "src" / "cp80.hpp"
+    rows = []
+    for line in source.read_text().splitlines():
+        values = re.findall(r"[-+]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][-+]?\d+)?", line.split("//", 1)[0])
+        if len(values) != 14 or "f" not in line or not line.lstrip().startswith("{"):
+            continue
+        rows.append([len(rows)] + [float(value) for value in values[1:]])
+    if len(rows) != 7:
+        raise SystemExit(f"expected 7 kAnchors in {source}, found {len(rows)}")
+    return rows
+
+
 # Current source anchors, in the same order as kAnchors.
-ANCH=[[0,2.065e-3,0.125,0.225,4.5e-8,9.0e-3,6.0e8,2.00,12,1.00,9.90e-2,0.010,1.25,0.45],
-      [1,2.46e-4,0.120,0.128,1.25e-8,7.5e-3,2.77e8,2.00,16,0.95,5.33e-2,0.010,1.25,0.45],
-      [2,2.389e-4,0.115,0.128,1.0e-8,6.0e-3,3.60e8,2.00,20,0.92,1.82e-2,0.015,1.25,0.45],
-      [3,2.811e-4,0.108,0.165,8.0e-9,4.6e-3,2.0e8,2.00,26,0.88,6.12e-3,0.020,2.7,0.45],
-      [4,5.622e-4,0.095,0.2357,6.0e-9,3.6e-3,5.41e7,2.00,34,0.82,2.635e-3,0.020,2.6,0.45],
-      [5,2.108e-3,0.080,0.3771,2.5e-9,3.0e-3,5.21e7,2.00,44,0.74,1.20e-3,0.015,2.4,0.45],
-      [6,8.433e-3,0.062,0.6678,2.0e-9,2.6e-3,5.00e7,2.00,60,0.62,4.50e-4,0.0128,2.2,0.45]]
+ANCH = load_anchors()
 def wr():
     with open('/tmp/a.txt','w') as f:
         for q in ANCH: f.write(" ".join(f"{z:.6g}" for z in q)+"\n")

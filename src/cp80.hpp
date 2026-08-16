@@ -670,8 +670,8 @@ private:
 //  CAVEAT: the corner frequencies and Q values below are PLAUSIBLE, not transcribed.
 //  The real RC network is on pages 14-15 of the CP-70B owner's manual (overall circuit
 //  diagram). Replacing these with the measured values is a transcription job, not a
-//  modelling one. Explicit setTone(0,0,0) is flat; prepare() uses the measured default
-//  panel voicing.
+//  modelling one. Explicit setTone(0,0,0) is flat; prepare() uses the hardware's
+//  center-detented default.
 // =====================================================================================
 struct Biquad {
     float b0=1,b1=0,b2=0,a1=0,a2=0,z1=0,z2=0;
@@ -718,7 +718,7 @@ public:
         // The CP-80 puts out 78 mV max into 600 ohm; it is a low-drive, near-linear
         // chain, so this is genuinely just bandwidth, not distortion.
         setBrilliance(1);                     // MEDIUM
-        setTone(0.f, -8.f, 0.f);               // measured default panel voicing
+        setTone(0.f, 0.f, 0.f);                // center-detented hardware default
         prepareBody();
         for (auto& v : voices) v = Voice{};
         stampCounter = 0;

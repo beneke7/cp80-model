@@ -167,8 +167,9 @@ the bottom three; the rest were scaled. Do not present them as measured.
 | PATCH OUT / IN | −20 dBm 600 Ω / 100 kΩ | downstream hardware, outside this model |
 | Line out | −20 dBm 600 Ω balanced | CP-80 electrical output |
 
-The production path uses MEDIUM brilliance with the existing tone stack at `0 / -8 / 0`
-dB (bass / mid / treble), selected by a full-corpus A/B and listening pass. The tone-stack
+The production path uses MEDIUM brilliance with the center-detented flat tone stack at
+`0 / 0 / 0` dB (bass / mid / treble). The former −8 dB middle cut was a corpus-matching
+compensation, not a hardware panel default; the tone-stack
 RC values should still be transcribed from the CP-70B overall circuit diagram (owner's
 manual pp. 14–15) rather than treated as an exact circuit reconstruction.
 

@@ -77,17 +77,6 @@ def window_band_levels(x, sr, h1, start, end, bands):
             for band in bands}
 
 
-def spectral_flatness(x, sr, start, end, lo, hi):
-    freq, mag = spectrum(x, sr, start, end)
-    if not len(freq):
-        return float("nan")
-    mask = (freq >= lo) & (freq < hi)
-    if not np.any(mask):
-        return float("nan")
-    p = np.maximum(mag[mask] ** 2, EPS)
-    return float(np.exp(np.mean(np.log(p))) / np.mean(p))
-
-
 def tail_snr(x, sr, start, end, lo, hi):
     duration = len(x) / sr
     tail_end = duration - 0.02
@@ -225,7 +214,6 @@ def signal_metrics(x, sr, note):
                                "sustain": len(sustain["freqs"]),
                                "late": len(late["freqs"])}},
         "am": am, "snr": snr,
-        "flatness_6_16k": spectral_flatness(x, sr, 0.0, min(0.03, duration), 6000, 16000),
     }
 
 
@@ -366,8 +354,6 @@ def pair_row(ref_path, model_path, sfz, volume):
     am_diffs = [row[f"am_h{n}_err_db_rms"] for n in range(1, 7)
                 if np.isfinite(row[f"am_h{n}_err_db_rms"])]
     row["am_rmse_db_rms"] = float(np.sqrt(np.mean(np.square(am_diffs)))) if am_diffs else float("nan")
-    row["flatness_6_16k_ref"], row["flatness_6_16k_model"] = r["flatness_6_16k"], m["flatness_6_16k"]
-    row["flatness_6_16k_err"] = m["flatness_6_16k"] - r["flatness_6_16k"]
     for lo, hi in ALL_BANDS:
         key = f"{lo:g}_{hi:g}"
         row[f"snr_{key}_ref_db"], row[f"snr_{key}_model_db"] = r["snr"][(lo, hi)], m["snr"][(lo, hi)]

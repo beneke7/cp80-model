@@ -7,7 +7,7 @@ namespace cp80 {
 struct AdapterParameters {
     float volume = 1.f;
     float bassDb = 0.f;
-    float midDb = -8.f;
+    float midDb = 0.f;
     float trebleDb = 0.f;
     int brilliance = 1;
 };
@@ -38,7 +38,7 @@ public:
 
     void process(float* out, int n, const AdapterEvent* events = nullptr, int count = 0)
     {
-        if (!out || n <= 0) return;
+        if (n < 0 || (!out && n > 0)) return;
         if (!events || count <= 0) count = 0;
         if (target.bassDb != applied.bassDb || target.midDb != applied.midDb ||
             target.trebleDb != applied.trebleDb) {
@@ -50,6 +50,14 @@ public:
         if (target.brilliance != applied.brilliance) {
             engine.setBrilliance(target.brilliance);
             applied.brilliance = target.brilliance;
+        }
+
+        if (n == 0) {
+            int eventIndex = 0;
+            while (eventIndex < count && events[eventIndex].offset <= 0)
+                apply(events[eventIndex++]);
+            volume = target.volume;
+            return;
         }
 
         const float startVolume = volume;

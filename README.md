@@ -19,6 +19,7 @@ CP80_REFERENCE_DIR=... .venv/bin/python tools/render_reference_match.py out/mode
 .venv/bin/python tools/render_reference_demo.py out/demo-reference-peakmatched.wav
 CP80_DEMO_SAMPLE_DIR=out/model-reference-matched .venv/bin/python tools/render_reference_demo.py out/demo-model-peakmatched.wav
 .venv/bin/python tools/evaluate_corpus.py --output out/corpus-eval
+.venv/bin/python tools/evaluate_demo.py --output out/demo-eval.csv
 ```
 
 **Read `AGENTS.md` before changing anything.** It records the physics invariants, which
@@ -48,6 +49,7 @@ optimizations and fitting approaches that were tried, measured, and found worse.
 | `tools/attack_probe.py` | separates early high-frequency attack from later decay |
 | `tools/spectral_balance.py` | fixed-window band energy and sixth-order Butterworth decay check |
 | `tools/evaluate_corpus.py` | multicore 81-sample scorecard with validity gates and grouped summaries |
+| `tools/evaluate_demo.py` | repeatable chord/demo body, spectral-flatness, and modulation scorecard |
 
 Calibration iterates without recompiling: `analyze` reads anchor overrides from the file
 named in `$CP80_ANCHORS`. Set `$CP80_REFERENCE_DIR` to use a reference corpus outside

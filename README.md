@@ -39,6 +39,7 @@ optimizations and fitting approaches that were tried, measured, and found worse.
 |---|---|
 | `src/cp80.hpp` | the whole engine; `kAnchors` is the instrument |
 | `src/main.cpp` | standalone demo host |
+| `PLUGIN.md` | minimal real-time plugin boundary and acceptance checks |
 | `tools/cal.py` | fixed-point calibration against reference recordings |
 | `tools/compare.py` | model vs reference plots (partial envelope, decay) |
 | `tools/partials.py` | sequential partial tracker with running B estimate |

@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <chrono>
 #include <cstdio>
+#include <cstdlib>
 
 // ----------------------------------------------------------------------- WAV writer
 static void writeWav(const char* path, const std::vector<float>& x, int sr)
@@ -38,6 +39,8 @@ int main(int argc, char** argv)
 
     cp80::CP80 piano;
     piano.prepare(SR, BLOCK);
+    if (const char* bg = std::getenv("CP80_BODY_GAIN"))
+        piano.setBodyGain(float(std::atof(bg)));
 
     // A little Fm9 -> Bb13 -> Ebmaj9 thing, plus a single hard-struck low note at the
     // end so you can hear the bass inharmonicity on its own.

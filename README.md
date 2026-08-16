@@ -65,6 +65,8 @@ The default body mix is `1`; set `CP80_BODY_GAIN=0` for the string-only model. T
 body path adds three normalized shared low-Q resonators near 38, 80, and 170 Hz,
 with weights `1.0 / 0.30 / 0.48`. Its impulse follows total string mass and alternates
 note polarity so dense chords do not add one shared mode coherently.
+For demo A/B, `CP80_BODY_GAIN` is also read by `build/demo`; the production coupling is
+calibrated in `kBodyDrive`, while this control remains a reversible mix diagnostic.
 The production hammer uses `p=2`, a global impact-rate stiffness law `q=2.25`, and a
 global `0.70` stiffness scale for the softer urethane/leather facing; set
 `CP80_HAMMER_RATE_P` or `CP80_HAMMER_SCALE` for diagnostic sweeps. Bichord beating keeps

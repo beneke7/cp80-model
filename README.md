@@ -13,6 +13,9 @@ make pulse_probe           # prescribed-pulse modal diagnostic
 make fit_pulse             # fit an asymmetric force pulse through the modal bank
 make fit_hybrid            # fit opt-in contact impedance/loss against attack spectra
 make adapter_render        # render the canonical score through the host-neutral adapter
+cmake -S plugin -B build/plugin -DCMAKE_BUILD_TYPE=Release
+cmake --build build/plugin --config Release --parallel 8
+ctest --test-dir build/plugin -C Release --output-on-failure
 CP80_REFERENCE_DIR=... .venv/bin/python tools/attack_probe.py  # attack-band diagnostic
 CP80_REFERENCE_DIR=... .venv/bin/python tools/spectral_balance.py --notes 27 42
 CP80_BODY_GAIN=0 .venv/bin/python tools/render_lib.py out/model-lib-body  # string-only A/B
@@ -43,6 +46,7 @@ optimizations and fitting approaches that were tried, measured, and found worse.
 | `src/demo_score.hpp` | canonical event stream shared by demo and adapter checks |
 | `src/main.cpp` | standalone demo host |
 | `PLUGIN.md` | minimal real-time plugin boundary and acceptance checks |
+| `plugin/` | JUCE VST3/AU/standalone wrapper for Reaper |
 | `tools/cal.py` | fixed-point calibration against reference recordings |
 | `tools/compare.py` | model vs reference plots (partial envelope, decay) |
 | `tools/partials.py` | sequential partial tracker with running B estimate |
@@ -91,8 +95,8 @@ mass and gets a deterministic 0--15 ms note-dependent arrival delay so dense cho
 For demo A/B, `CP80_BODY_GAIN` is also read by `build/demo`; the production coupling is
 calibrated in `kBodyDrive` with an impact-weighted speed exponent of `1.25`, while this
 control remains a reversible mix diagnostic.
-The default panel voicing is the existing tone stack at `0 / -8 / 0` dB (bass / mid /
-treble), selected by the corpus/ear A/B. The production hammer uses `p=2`, a global impact-rate stiffness law `q=2.25`, and a
+The default panel voicing is the center-detented flat tone stack at `0 / 0 / 0` dB
+(bass / mid / treble). The production hammer uses `p=2`, a global impact-rate stiffness law `q=2.25`, and a
 global `0.70` stiffness scale for the softer urethane/leather facing; set
 `CP80_HAMMER_RATE_P` or `CP80_HAMMER_SCALE` for diagnostic sweeps. Bichord beating keeps
 the measured `0.4--2.0` cent note-specific split, with a `2.0` fast-partner bridge weight
@@ -146,8 +150,8 @@ the reference file's own H1 for relative levels. It writes:
 The independent observables are attack and sustain energy in 100--1000, 1--2, 2--3,
 3--4, 4--6, and 6--9 kHz; body energy in 20--60, 60--120, and 120--220 Hz; early
 Butterworth/Hilbert decay sigma; H1--H12 amplitudes, tilt, and inharmonicity `B`; H1
-pitch and drift over 30--200 ms, 200--500 ms, and 1--2 s; unison AM depth; high-band
-flatness; duration, peak/RMS, and attack-to-tail SNR. The scorecard never fits a band
+pitch and drift over 30--200 ms, 200--500 ms, and 1--2 s; unison AM depth; duration,
+peak/RMS, and attack-to-tail SNR. The scorecard never fits a band
 whose reference attack is less than 12 dB above its tail noise, and never treats weak
 partial tracking as a valid harmonic error. Contact duration, force shape, velocity
 growth, and real-time stability remain separate engine diagnostics because they are

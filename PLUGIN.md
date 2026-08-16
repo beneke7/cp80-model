@@ -1,15 +1,15 @@
 # Lightweight plugin boundary
 
-Status: design only. The engine remains `src/cp80.hpp`; this file describes the
-smallest host adapter worth building.
+Status: SDK-free adapter implemented; JUCE VST3/AU wrapper is now in `plugin/`.
+The engine remains `src/cp80.hpp` and the first Reaper build is deliberately thin.
 
 ## Product
 
 - A single playable CP-80 instrument, with no samples and no corrective EQ.
-- One `CP80` instance per plugin instance; mono physical output duplicated to
-  stereo initially.
+- One `CP80` instance per plugin instance; tremolo-off output is dual-mono and
+  tremolo-on output is the hardware's antiphase stereo pair.
 - MIDI note-on/off and sustain pedal (CC64).
-- No input processing, oversampling setting, reverb, or mechanical-noise layer
+- No audio patch input, user oversampling setting, reverb, or mechanical-noise layer
   in the first release. Those would hide whether the instrument itself works.
 
 ## Adapter contract
@@ -35,11 +35,13 @@ thread then passes one block-local copy to this boundary; coefficient updates
 happen at most once per block. Brilliance is a real three-position panel switch
 and may be crossfaded over one block to avoid a zipper.
 
-The first public controls are intentionally small:
+The hardware panel defines the first public controls:
 
 - Volume
-- Bass, Mid, Treble
+- Bass, Middle, Treble (center detent is flat)
 - Brilliance: Low / Medium / High
+- Tremolo: Off / On
+- Depth and Speed
 
 Body level can remain a diagnostic/default setting for now. Hammer, strike,
 wave-impedance, and damping controls stay out of the user interface until a
@@ -47,11 +49,9 @@ blind test shows that exposing one is musically useful.
 
 ## Format decision
 
-Do not add a framework. Use one thin native adapter for the user's main host:
-
-- macOS-only / Logic: Audio Unit first;
-- cross-platform host with CLAP support: CLAP first;
-- VST3 only when a target host requires it.
+The first format wrapper is JUCE because it reaches Reaper immediately and keeps
+AU/VST3/standalone behind one small native UI. CLAP can be added later without
+changing the engine or SDK-free adapter.
 
 The engine and an offline adapter test must compile without any plugin SDK. This
 keeps rendering, calibration, and regression tests independent of the wrapper.
@@ -64,7 +64,8 @@ Before shipping a format adapter:
 2. 44.1, 48, and 96 kHz; blocks of 1, 17, 128, 2048, and oversized blocks; no non-finite samples.
 3. Sample-offset MIDI events do not move when the host block size changes.
 4. Sustain, repeated notes, voice stealing, and reset are deterministic.
-5. A dense chord remains comfortably real-time on the existing `make check`
+5. Tremolo off produces identical L/R; tremolo on makes the L+R modulation cancel.
+6. A dense chord remains comfortably real-time on the existing `make check`
    budget.
 
 The plugin is ready when the user cannot reliably distinguish its output from

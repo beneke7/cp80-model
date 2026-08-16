@@ -73,7 +73,7 @@ The weak 32 Hz mode has the slower measured low-end decay; the weights are
 mass and alternates note polarity so dense chords do not add one shared mode coherently.
 For demo A/B, `CP80_BODY_GAIN` is also read by `build/demo`; the production coupling is
 calibrated in `kBodyDrive`, while this control remains a reversible mix diagnostic.
-The default panel voicing is the existing tone stack at `0 / -6 / 0` dB (bass / mid /
+The default panel voicing is the existing tone stack at `0 / -8 / 0` dB (bass / mid /
 treble), selected by the corpus/ear A/B. The production hammer uses `p=2`, a global impact-rate stiffness law `q=2.25`, and a
 global `0.70` stiffness scale for the softer urethane/leather facing; set
 `CP80_HAMMER_RATE_P` or `CP80_HAMMER_SCALE` for diagnostic sweeps. Bichord beating keeps

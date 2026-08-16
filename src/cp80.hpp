@@ -704,7 +704,7 @@ public:
         // The CP-80 puts out 78 mV max into 600 ohm; it is a low-drive, near-linear
         // chain, so this is genuinely just bandwidth, not distortion.
         setBrilliance(1);                     // MEDIUM
-        setTone(0.f, -6.f, 0.f);               // measured default panel voicing
+        setTone(0.f, -8.f, 0.f);               // measured default panel voicing
         prepareBody();
         for (auto& v : voices) v = Voice{};
         stampCounter = 0;

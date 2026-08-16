@@ -59,9 +59,11 @@ Per mode `n` of one string:
 σ_n = b1 + b3 ω_n²
 ```
 
-1. **Bridge readout weight is `n` exactly.** The piezo sits at a rigid termination and
-   senses *force*: `T ∂y/∂x|_L ∝ Σ (−1)ⁿ n y_n`. Do **not** use `f_n/f₀` (= `n√(1+Bn²)`);
-   that was a bug worth up to +7 dB at the top of the bank.
+1. **Bridge readout weight is `n` exactly within a note.** The piezo sits at a rigid
+   termination and senses *force*: `T ∂y/∂x|_L = (Tπ/L)Σ(−1)ⁿ n y_n`. The model keeps
+   the `n` weight for the partial ladder and restores the note-level `Tπ/L` scale from
+   `T/L = 4m_single f₀²`, normalized at C4. Do **not** replace `n` with `f_n/f₀`
+   (= `n√(1+Bn²)`); that was a bug worth up to +7 dB at the top of the bank.
 
 2. **Excitation gain and readout cancel.** Impulse invariance gives `b_n ∝ 1/ω_n`; the
    readout gives `w_n ∝ n`. Their product is flat. The spectral envelope must therefore
@@ -228,7 +230,7 @@ manual pp. 14–15) rather than treated as an exact circuit reconstruction.
    humps are broad (Q ≈ 3–5), so it is not sympathetic string ringing either. The
    production `CP80_BODY_GAIN` path adds four shared low-Q resonators near
    32, 38, 80, and 170 Hz. The weak 32 Hz mode has the slower low-end decay; the other
-   three retain the common measured decay. It is driven by hammer impact momentum, the low-frequency limit
+   three use one shared fitted decay (sigma 8) to cover the useful early body envelope. It is driven by hammer impact momentum, the low-frequency limit
    of integrating the transmitted strike force, and is rendered before the common pickup
    chain. Each mode is normalized to unit peak response, hammer momentum is scaled by a
    single fitted frame/piezo coupling, with weights **0.20 / 1.0 / 0.30 / 0.48** (32 / 38 / 80 / 170 Hz) and a default

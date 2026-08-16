@@ -14,7 +14,8 @@
 //    Hammer: point mass + power-law felt, F = K*[y_h - y(x0)]_+^p   (Hall/Askenfelt)
 //    Pickup: CP-80 has 88 individual piezos on the harp casting. A piezo at a rigid
 //            termination senses FORCE, so the readout is
-//              F_bridge ~ sum_n (-1)^n * n * y_n
+//              F_bridge ~ (T*pi/L) * sum_n (-1)^n * n * y_n
+//            n is the within-note partial weight; T*pi/L is a note-level scale.
 //            The +6 dB/oct that tilt implies is the instrument's actual brightness.
 //
 //  NUMERICS
@@ -63,6 +64,8 @@ static constexpr float kPolarHz     = 0.0f;  // single string, two transverse pl
 static constexpr int   kBodyModes   = 4;    // shared cast/case resonances
 static constexpr float kBodyDrive   = 0.0075f; // corpus-calibrated hammer-to-frame/piezo coupling
 static constexpr float kBodyMassRef = 0.01224f; // total C4 string mass; normalizes body drive
+static constexpr float kBridgeMassRef = 0.00612f; // one C4 string; normalizes T/L readout
+static constexpr float kBridgeF0Ref   = 261.626f; // C4; keeps the correction unity at C4
 static constexpr float kHammerRateRef = 0.71f; // MIDI velocity at the fitted forte K
 static constexpr float kHammerRateQ   = 2.25f; // urethane impact-rate hardening
 static constexpr float kHammerStiffnessScale = 0.70f; // softer global urethane/leather face
@@ -280,6 +283,10 @@ struct alignas(64) Voice {
 
         nModes = 0;
         const float PI = 3.14159265358979f;
+        // T/L = 4*m_single*f0^2 for a string. Restore the note-level bridge-force
+        // factor while leaving the arbitrary common voltage scale in outGain.
+        const float bridgeScale = (s.mass / float(s.nStrings)) * s.f0 * s.f0 /
+                                  (kBridgeMassRef * kBridgeF0Ref * kBridgeF0Ref);
 
         auto emit = [&](float fn, float sg, float shape, float wSign, float outW, float nIdx) {
             if (nModes >= kMaxModes) return;
@@ -306,7 +313,7 @@ struct alignas(64) Voice {
             wN  [i] = w;
             bIn [i] = (2.f / s.mass) * shape * T * r * st * rwd;
             sIn [i] = shape;
-            wOut[i] = wSign * nIdx * outW;
+            wOut[i] = wSign * nIdx * outW * bridgeScale;
             y1[i] = y2[i] = 0.f;
             ++nModes;
         };
@@ -850,7 +857,7 @@ private:
         for (int i = 0; i < kBodyModes; ++i) {
             // A weak, slower frame mode supplies the measured low-end sustain;
             // the three broad impact humps retain the common sigma.
-            const float sigma = i == 3 ? 4.0f : 12.0f;
+            const float sigma = i == 3 ? 4.0f : 8.0f;
             const float omega = 6.2831853071795864f * f[i];
             const float wd = std::sqrt(std::max(omega * omega - sigma * sigma, 1.f));
             const float r = std::exp(-sigma * T);

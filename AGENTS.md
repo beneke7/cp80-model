@@ -143,12 +143,14 @@ the bottom three; the rest were scaled. Do not present them as measured.
 - **Low D# growl:** reference H2--H4 sit about 13 dB above H1; the model is roughly
   11.6 dB low. Hammer stiffness and body gain do not move it. D#1's first comb null is
   near H8 (`x/L ≈ .125`), while D3's is near H5 (`x/L ≈ .20`), so strike-position
-  variation remains the next measurement before changing the table.
+  variation remains unresolved in the bass/mid break. The upper-register comb sweep did
+  support a conservative strike rise at the 84 and 108 anchors (`x/L = .14/.16`), which
+  is now production; it is not a per-note correction.
 - **Decay shape:** the raised b3 anchors improve the 1--4 kHz sustain, but the single
   `b1 + b3*ω²` law still over-damps parts of 4--6 kHz. This is a law-shape limitation,
   not a reason for corrective EQ.
 - **Still deferred:** FF tension glide, per-note tuning scatter, exact tone-stack RC
-  transcription, and treble-anchor fitting above MIDI 84.
+  transcription, and the high-register damping-law fit above MIDI 84.
 
 ---
 

@@ -91,7 +91,8 @@ The `b3` curve is raised smoothly through MIDI 72 to match the measured mid-band
 the energy-preserving `n=40` mode
 truncation removes the artificial note-dependent 11 dB ladder step. The upper-register
 readout gain stays near unity so high notes do not disappear into the shared frame
-component. The fixed-window
+component, and the strike ratio rises conservatively from 0.095 at C5 to 0.14 at C6
+and 0.16 at B7 to preserve the measured upper-register comb. The fixed-window
 attack check is now within roughly 2–8 dB in the 0.1–6 kHz bands on those two notes.
 The PP→FF 4–6 kHz growth gate still selects the global `p=2` law; the expanded fitter
 now measures the available layers from D#1 through G#5 at the SFZ layer midpoints. The remaining contact-law

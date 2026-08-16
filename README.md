@@ -65,9 +65,10 @@ For the hard-facing experiment, add `CP80_HAMMER_FACING=<scale>
 CP80_HAMMER_TAU_MS=<ms>`; it is a one-state Maxwell relaxation branch for the
 urethane/leather contact, and remains opt-in until the keyboard-wide fit is physical.
 The default body mix is `1`; set `CP80_BODY_GAIN=0` for the string-only model. The
-body path adds three normalized shared low-Q resonators near 38, 80, and 170 Hz,
-with weights `1.0 / 0.30 / 0.48`. Its impulse follows total string mass and alternates
-note polarity so dense chords do not add one shared mode coherently.
+body path adds four normalized shared low-Q resonators near 32, 38, 80, and 170 Hz.
+The weak 32 Hz mode has the slower measured low-end decay; the weights are
+`0.20 / 1.0 / 0.30 / 0.48` (32 / 38 / 80 / 170 Hz). Its impulse follows total string
+mass and alternates note polarity so dense chords do not add one shared mode coherently.
 For demo A/B, `CP80_BODY_GAIN` is also read by `build/demo`; the production coupling is
 calibrated in `kBodyDrive`, while this control remains a reversible mix diagnostic.
 The default panel voicing is the existing tone stack at `0 / -3 / 0` dB (bass / mid /

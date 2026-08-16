@@ -226,11 +226,12 @@ manual pp. 14–15) rather than treated as an exact circuit reconstruction.
    note's own peak in the first 50 ms, decaying with amplitude sigma ≈12. Note-independent
    frequency, so it is the casting/case ringing into the piezos, not string content; the
    humps are broad (Q ≈ 3–5), so it is not sympathetic string ringing either. The
-   production `CP80_BODY_GAIN` path adds three shared low-Q resonators near
-   38, 80, and 170 Hz. It is driven by hammer impact momentum, the low-frequency limit
+   production `CP80_BODY_GAIN` path adds four shared low-Q resonators near
+   32, 38, 80, and 170 Hz. The weak 32 Hz mode has the slower low-end decay; the other
+   three retain the common measured decay. It is driven by hammer impact momentum, the low-frequency limit
    of integrating the transmitted strike force, and is rendered before the common pickup
    chain. Each mode is normalized to unit peak response, hammer momentum is scaled by a
-   single fitted frame/piezo coupling, with weights **1.0 / 0.30 / 0.48** and a default
+   single fitted frame/piezo coupling, with weights **0.20 / 1.0 / 0.30 / 0.48** (32 / 38 / 80 / 170 Hz) and a default
    body mix of **1**. Its impulse is scaled by total string mass and note polarity. The reference
    flacs are peak-normalised per file, so only the relative band level and decay are used;
    no per-note body gains are introduced.

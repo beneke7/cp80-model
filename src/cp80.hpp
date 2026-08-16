@@ -60,7 +60,7 @@ static constexpr int   kOversample  = 2;     // set 4 if you want tighter contac
 static constexpr float kUnisonCentsMin = 0.4f;
 static constexpr float kUnisonCentsMax = 2.0f;
 static constexpr float kPolarHz     = 0.0f;  // single string, two transverse planes
-static constexpr int   kBodyModes   = 3;    // shared cast/case resonances
+static constexpr int   kBodyModes   = 4;    // shared cast/case resonances
 static constexpr float kBodyDrive   = 0.0075f; // corpus-calibrated hammer-to-frame/piezo coupling
 static constexpr float kBodyMassRef = 0.01224f; // total C4 string mass; normalizes body drive
 static constexpr float kHammerRateRef = 0.71f; // MIDI velocity at the fitted forte K
@@ -843,11 +843,13 @@ public:
 private:
     void prepareBody()
     {
-        static constexpr float f[kBodyModes] = { 38.f, 80.f, 170.f };
-        static constexpr float w[kBodyModes] = { 1.0f, 0.30f, 0.48f };
+        static constexpr float f[kBodyModes] = { 38.f, 80.f, 170.f, 32.f };
+        static constexpr float w[kBodyModes] = { 1.0f, 0.30f, 0.48f, 0.20f };
         const float T = float(1.0 / fsHost);
-        const float sigma = 12.0f; // measured broad-body decay, amplitude sigma (1/s)
         for (int i = 0; i < kBodyModes; ++i) {
+            // A weak, slower frame mode supplies the measured low-end sustain;
+            // the three broad impact humps retain the common sigma.
+            const float sigma = i == 3 ? 4.0f : 12.0f;
             const float omega = 6.2831853071795864f * f[i];
             const float wd = std::sqrt(std::max(omega * omega - sigma * sigma, 1.f));
             const float r = std::exp(-sigma * T);

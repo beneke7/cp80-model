@@ -9,6 +9,11 @@ int main(int argc,char**argv){
   const int SR=48000,BLK=128; cp80::CP80 p; p.prepare(SR,BLK);
   if (const char* lp = getenv("CP80_PICKUP_LP"))
     p.setPickupTone(float(atof(lp)), 32.f);
+  if (const char* md = getenv("CP80_TONE_MID")) {
+    const float bass = getenv("CP80_TONE_BASS") ? float(atof(getenv("CP80_TONE_BASS"))) : 0.f;
+    const float treble = getenv("CP80_TONE_TREBLE") ? float(atof(getenv("CP80_TONE_TREBLE"))) : 0.f;
+    p.setTone(bass, float(atof(md)), treble);
+  }
   if (const char* hs = getenv("CP80_HAMMER_SCALE"))
     p.setHammerScale(float(atof(hs)));
   if (const char* hp = getenv("CP80_HAMMER_P"))

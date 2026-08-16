@@ -55,6 +55,8 @@ named in `$CP80_ANCHORS`. Set `$CP80_REFERENCE_DIR` to use a reference corpus ou
 and `../sample-library` only for regression checks.
 For a pickup-bandwidth sweep, set `CP80_PICKUP_LP` when running `build/analyze`; the
 production medium brilliance corner is 6.0 kHz, with LOW/HIGH scaled around it.
+For a tone-stack sweep, set `CP80_TONE_BASS`, `CP80_TONE_MID`, and/or
+`CP80_TONE_TREBLE`; these are diagnostic overrides for the existing panel EQ.
 For the contact experiment, set `CP80_WAVE_CONTACT=1 CP80_WAVE_Z=<scale>` when
 running `build/analyze`; it is opt-in and is not the default model path yet.
 For the hybrid hammer experiment, set `CP80_HAMMER_DAMPING=<s/m>`; zero is the

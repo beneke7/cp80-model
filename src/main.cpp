@@ -41,6 +41,11 @@ int main(int argc, char** argv)
     piano.prepare(SR, BLOCK);
     if (const char* bg = std::getenv("CP80_BODY_GAIN"))
         piano.setBodyGain(float(std::atof(bg)));
+    if (const char* md = std::getenv("CP80_TONE_MID")) {
+        const float bass = std::getenv("CP80_TONE_BASS") ? float(std::atof(std::getenv("CP80_TONE_BASS"))) : 0.f;
+        const float treble = std::getenv("CP80_TONE_TREBLE") ? float(std::atof(std::getenv("CP80_TONE_TREBLE"))) : 0.f;
+        piano.setTone(bass, float(std::atof(md)), treble);
+    }
 
     // A little Fm9 -> Bb13 -> Ebmaj9 thing, plus a single hard-struck low note at the
     // end so you can hear the bass inharmonicity on its own.

@@ -6,6 +6,8 @@ failure modes than a normal README. The source of truth is still
 src/cp80.hpp; this file explains what each important group of lines means and
 what the calibration numbers can—and cannot—prove.
 
+Inline mathematics uses `$...$`; standalone equations use `$$...$$`.
+
 The model is a real-time, modal, force-readout model of a CP-70/CP-80 electric
 grand: strings, hammer contact, a rigid cast-iron frame, piezo pickups, and a
 small electrical output chain. It is not a model of a wooden soundboard, air
@@ -36,22 +38,22 @@ not as one sacred scalar objective.
 
 | symbol | meaning | units |
 |---|---|---|
-| x, L | longitudinal coordinate and vibrating string length | m |
-| t, T | time and one internal sample interval | s |
-| m, m_h | total vibrating string mass and hammer mass | kg |
-| μ=m/L | linear string density | kg/m |
-| T_s | string tension; called tension here to avoid confusing it with sample period | N |
-| f_0, ω_1 | fundamental frequency and angular fundamental | Hz, rad/s |
-| n | partial/mode index | dimensionless |
-| B | stiff-string inharmonicity coefficient | dimensionless |
-| σ_n | amplitude-decay constant of mode n | 1/s |
-| q_n or u_n | modal displacement/state | model-dependent displacement |
-| F | hammer force on the string | N |
-| x_0/L | normalized strike point | dimensionless |
-| hW | normalized hammer contact width | dimensionless |
-| p | compression exponent of the contact law | dimensionless |
-| K | contact stiffness scale | model-dependent |
-| A | amplitude; P=A² is proportional to power | arbitrary signal units |
+| $x$, $L$ | longitudinal coordinate and vibrating string length | m |
+| $t$, $T$ | time and one internal sample interval | s |
+| $m$, $m_h$ | total vibrating string mass and hammer mass | kg |
+| $\mu=m/L$ | linear string density | kg/m |
+| $T_s$ | string tension; called tension here to avoid confusing it with sample period | N |
+| $f_0$, $\omega_1$ | fundamental frequency and angular fundamental | Hz, rad/s |
+| $n$ | partial/mode index | dimensionless |
+| $B$ | stiff-string inharmonicity coefficient | dimensionless |
+| $\sigma_n$ | amplitude-decay constant of mode $n$ | 1/s |
+| $q_n$ or $u_n$ | modal displacement/state | model-dependent displacement |
+| $F$ | hammer force on the string | N |
+| $x_0/L$ | normalized strike point | dimensionless |
+| $hW$ | normalized hammer contact width | dimensionless |
+| $p$ | compression exponent of the contact law | dimensionless |
+| $K$ | contact stiffness scale | model-dependent |
+| $A$ | amplitude; $P=A^2$ is proportional to power | arbitrary signal units |
 
 The code uses float state but computes some modal spatial recurrences in double.
 The calibration scripts generally convert audio to float64 before FFT and
@@ -74,7 +76,7 @@ The intended approximation is therefore:
   signature, at least as a first-order approximation.
 
 The independence is not a claim that the iron frame is infinitely rigid. It is
-the architectural reason an N-note chord does not require an N-by-N
+the architectural reason an $N$-note chord does not require an $N$-by-$N$
 string-coupling matrix. The frame is reintroduced as four shared low-Q modes,
 not as a full plate finite-element model.
 
@@ -85,13 +87,13 @@ not as a full plate finite-element model.
 The source comment at src/cp80.hpp:5–18 starts from a transverse displacement
 expanded in sine modes:
 
-$$$$
+$$
 y(x,t)=\sum_{n=1}^{\infty}q_n(t)\,\phi_n(x),
 \qquad
 \phi_n(x)=\sin\!\left(\frac{n\pi x}{L}\right).
-$$$$
+$$
 
-For ideal simply-supported ends, φ_n(0)=φ_n(L)=0. The basis is not chosen
+For ideal simply-supported ends, $\phi_n(0)=\phi_n(L)=0$. The basis is not chosen
 merely because it is convenient: it is the eigenbasis of the idealized
 string boundary-value problem. In a real CP-80, bridge compliance, termination
 geometry, and castings perturb this basis. The current model puts those effects
@@ -100,16 +102,16 @@ junction rather than replacing the basis.
 
 ### 4.2 Modal forcing by a point strike
 
-If a force F(t) is applied at x_0, projecting the point force onto a sine
-mode gives a factor φ_n(x_0). With the normalization used by the source,
+If a force $F(t)$ is applied at $x_0$, projecting the point force onto a sine
+mode gives a factor $\phi_n(x_0)$. With the normalization used by the source,
 the modal equation is:
 
-$$$$
+$$
 \ddot q_n(t)+2\sigma_n\dot q_n(t)+\omega_n^2q_n(t)
 =\frac{2}{m}\sin\!\left(\frac{n\pi x_0}{L}\right)F(t).
-$$$$
+$$
 
-The factor 2/m is the modal normalization for a string whose sine mode has
+The factor $2/m$ is the modal normalization for a string whose sine mode has
 half the total modal mass. In code, s.mass is the whole vibrating unison mass
 seen by the hammer, while each emitted mode receives 2/s.mass in
 Voice::start() at src/cp80.hpp:297–323.
@@ -118,26 +120,26 @@ The spatial excitation factor is not just the point-strike comb. A hammer has a
 finite contact patch. Averaging the sine shape over a centered patch of width
 w gives:
 
-$$$$
+$$
 \frac{1}{w}\int_{x_0-w/2}^{x_0+w/2}
 \sin\!\left(\frac{n\pi x}{L}\right)\,dx
 =
 \sin\!\left(\frac{n\pi x_0}{L}\right)
 \operatorname{sinc}\!\left(\frac{n\pi w}{2L}\right),
-$$$$
+$$
 
-where sinc(z)=sin(z)/z. The code stores hWidth=w/L, so lines
+where $\operatorname{sinc}(z)=\sin(z)/z$. The code stores $hWidth=w/L$, so lines
 330–345 construct:
 
-$$$$
+$$
 \theta_S=\pi\frac{x_0}{L},
 \qquad
 \theta_W=\frac{\pi}{2}\frac{w}{L},
 \qquad
 g_n=\sin(n\theta_S)\frac{\sin(n\theta_W)}{n\theta_W}.
-$$$$
+$$
 
-This is why the old hW=0.104 was disastrous in the bass: the sinc zero is
+This is why the old $hW=0.104$ was disastrous in the bass: the sinc zero is
 reached at a low partial index. It was not a harmless “brightness” parameter;
 it represented a very large contact patch and therefore deleted high spatial
 harmonics at the source.
@@ -146,19 +148,19 @@ harmonics at the source.
 
 The current dispersion law is the standard low-order stiff-string form:
 
-$$$$
+$$
 \omega_n=2\pi f_0\,n\sqrt{1+B n^2},
 \qquad
 f_n=f_0\,n\sqrt{1+B n^2}.
-$$$$
+$$
 
 For a string with tension T_s, Young modulus E, diameter d, and bending
 second moment I=πd⁴/64, the coefficient in this convention is:
 
-$$$$
+$$
 B=\frac{\pi^2EI}{T_sL^2}
 =\frac{\pi^3Ed^4}{64T_sL^2}.
-$$$$
+$$
 
 The physics is visible in the scaling: thicker strings and larger E increase
 dispersion, while larger tension and length reduce it. The code does not infer
@@ -167,9 +169,9 @@ interpolates B between anchor rows.
 
 The tracker fits the linearized relation:
 
-$$$$
+$$
 \left(\frac{f_n}{nf_1}\right)^2-1\approx Bn^2.
-$$$$
+$$
 
 Thus a least-squares regression of the left side against n² has slope B.
 This is exactly the np.polyfit(A**2, (F/(A*f1))**2-1, 1) operation in
@@ -180,9 +182,9 @@ tools/evaluate_corpus.py:93–130.
 
 The production law is:
 
-$$$$
+$$
 \sigma_n=b_1+b_3\omega_n^2.
-$$$$
+$$
 
 b1 controls the long, low-frequency tail. b3 controls how quickly upper modes
 disappear. Because ω_n² grows approximately as n² and acquires additional
@@ -198,18 +200,18 @@ identify whether the damping law, force pulse, or pickup chain is responsible.
 
 At the rigid termination x=L, the transverse slope is:
 
-$$$$
+$$
 \left.\frac{\partial y}{\partial x}\right|_{x=L}
 =\frac{\pi}{L}\sum_{n=1}^{\infty}(-1)^n n q_n(t).
-$$$$
+$$
 
 Multiplying by tension gives the transverse termination force:
 
-$$$$
+$$
 F_{\mathrm{bridge}}(t)
 =T_s\left.\frac{\partial y}{\partial x}\right|_{x=L}
 =\frac{T_s\pi}{L}\sum_{n=1}^{\infty}(-1)^n n q_n(t).
-$$$$
+$$
 
 This explains three source lines that must not be “simplified” independently:
 
@@ -223,22 +225,22 @@ by as much as roughly 7 dB.
 
 For a string, the fundamental relation is:
 
-$$$$
+$$
 f_0=\frac{1}{2L}\sqrt{\frac{T_s}{\mu}},
 \qquad
 \mu=\frac{m_{\mathrm{single}}}{L},
 \qquad
 \frac{T_s}{L}=4m_{\mathrm{single}}f_0^2.
-$$$$
+$$
 
 bridgeScale at src/cp80.hpp:292–295 is the dimensionless version normalized
 to a C4 reference mass and frequency:
 
-$$$$
+$$
 S_{\mathrm{bridge}}
 =\frac{(m/n_{\mathrm{strings}})f_0^2}
 {m_{\mathrm{ref}}f_{\mathrm{ref}}^2}.
-$$$$
+$$
 
 The division by nStrings matters. specForNote() multiplies mass by one or
 two strings so the hammer sees the whole unison, but the bridge-force relation
@@ -246,11 +248,11 @@ needs the mass of one string when reconstructing T_s/L.
 
 The modal input and output scales are therefore approximately:
 
-$$$$
+$$
 b_n\propto\frac{1}{m\omega_n},
 \qquad
 w_n\propto n\frac{T_s}{L},
-$$$$
+$$
 
 so their principal frequency dependence is not an arbitrary spectral tilt.
 The attack envelope should primarily come from the force pulse, strike comb,
@@ -262,33 +264,33 @@ finite-width sinc, and modal damping.
 
 For one damped mode, define:
 
-$$$$
+$$
 \omega_{d,n}=\sqrt{\omega_n^2-\sigma_n^2},
 \qquad
 r_n=e^{-\sigma_nT}.
-$$$$
+$$
 
 The exact discrete poles are r_n e^{±iω_{d,n}T}. The second-order
 recurrence used by the engine is:
 
-$$$$
+$$
 u_n[k]=a_{1,n}u_n[k-1]+a_{2,n}u_n[k-2]+b_nF[k-1],
-$$$$
+$$
 
 with:
 
-$$$$
+$$
 a_{1,n}=2r_n\cos(\omega_{d,n}T),
 \qquad
 a_{2,n}=-r_n^2,
-$$$$
+$$
 
 and the impulse-invariant force coefficient:
 
-$$$$
+$$
 b_n=\frac{2}{m}\,g_n\,T\,r_n
 \frac{\sin(\omega_{d,n}T)}{\omega_{d,n}}.
-$$$$
+$$
 
 This is what ca1, ca2, bIn, and sIn represent at lines
 317–322. The input delay is intentional: hammer force is evaluated before
@@ -299,10 +301,10 @@ discrete equivalent of the z⁻¹ term in the source comment.
 
 The characteristic roots satisfy:
 
-$$$$
+$$
 |z_{1,2}|=r_n=e^{-\sigma_nT}<1
 \quad\text{whenever}\quad \sigma_n>0.
-$$$$
+$$
 
 Therefore the linear free-phase bank has no finite-difference CFL condition.
 The numerical stability condition is not a string-wave Courant bound; it is
@@ -313,18 +315,18 @@ is separately protected by kMaxForce=400 N.
 
 The code assumes σ/ω is small. It uses:
 
-$$$$
+$$
 \omega_d\approx\omega\left(1-\frac12(\sigma/\omega)^2\right),
 \qquad
 \frac{1}{\omega_d}\approx\frac{1}{\omega}
 \left(1+\frac12(\sigma/\omega)^2\right).
-$$$$
+$$
 
 It also evaluates e⁻ˣ with the cubic Taylor polynomial
 
-$$$$
+$$
 e^{-x}\approx1-x+\frac{x^2}{2}-\frac{x^3}{6},
-$$$$
+$$
 
 because x=σT is below about 3×10⁻³ in the active bank. The omitted term is
 order x⁴; the source comment estimates an error below 2×10⁻¹² in this
@@ -333,11 +335,11 @@ operating range.
 The spatial sequences do not call sin(nθ) 256 times. They use the Chebyshev
 recurrence:
 
-$$$$
+$$
 s_{n+1}=2\cos(\theta)s_n-s_{n-1},
 \qquad
 s_n=\sin(n\theta).
-$$$$
+$$
 
 The recurrence is carried in double to prevent phase drift. This is both a
 performance optimization and a numerical correction: passing large arguments
@@ -353,9 +355,9 @@ Nyquist are removed by the linear output chain and would be wasted work.
 The 2:1 decimator is a normalized 31-tap Blackman-windowed halfband FIR. For
 offset d from its center, the ideal halfband kernel is:
 
-$$$$
+$$
 h[d]=\frac{\sin(\pi d/2)}{\pi d}\,w[d],
-$$$$
+$$
 
 with the center defined by its limiting value and w[d] the Blackman window.
 Even offsets vanish, so symmetric folding reduces the arithmetic to the
@@ -368,9 +370,9 @@ safe because it changes neither the intended passband nor the physical model.
 
 The normalized MIDI velocity v is mapped to an initial hammer speed:
 
-$$$$
+$$
 v_h(v)=0.35+5.15v^2\quad\mathrm{m/s}.
-$$$$
+$$
 
 The quadratic mapping compresses low MIDI velocities and is shared by the
 initial hammer state and the impact-rate stiffness law. The fitted reference
@@ -378,10 +380,10 @@ velocity is v_ref=0.71.
 
 The rate-dependent contact stiffness is:
 
-$$$$
+$$
 K(v)=K_0\,s_K
 \left(\frac{v_h(v)}{v_h(v_{\mathrm{ref}})}\right)^q,
-$$$$
+$$
 
 where production uses s_K=0.70 and q=2.25. This is not per-note EQ: it is
 one global material/rate law applied to the interpolated K_0 anchor.
@@ -390,24 +392,24 @@ one global material/rate law applied to the interpolated K_0 anchor.
 
 The string displacement at the strike point is the modal sum:
 
-$$$$
+$$
 y_s[k]=\sum_n g_n u_n[k].
-$$$$
+$$
 
 The hammer compression is:
 
-$$$$
+$$
 \eta[k]=y_h[k]-y_s[k],
 \qquad
 [\eta]_+=\max(\eta,0).
-$$$$
+$$
 
 The production contact law is the lossless power-law contact:
 
-$$$$
+$$
 F[k]=K[\eta[k]]_+^p,
 \qquad p=2.
-$$$$
+$$
 
 The power p is a global material exponent. Historical literature values for
 felt hammers are higher, but the CP-80 specification describes urethane plus
@@ -417,10 +419,10 @@ note.
 
 The optional Hunt–Crossley-style branch is:
 
-$$$$
+$$
 F[k]=K[\eta[k]]_+^p
 \max\!\left(0,1+c\left(v_h[k]-v_s[k]\right)\right).
-$$$$
+$$
 
 It adds rate-dependent loss, but its measured velocity trend moved the wrong
 way for the current target and it remains diagnostic.
@@ -430,11 +432,11 @@ way for the current target and it remains diagnostic.
 With hT the internal sample period and m_h the hammer mass, the explicit
 contact update is:
 
-$$$$
+$$
 v_h[k+1]=v_h[k]-\frac{F[k]}{m_h}hT,
 \qquad
 y_h[k+1]=y_h[k]+hT\,v_h[k+1].
-$$$$
+$$
 
 The string modes receive the same force in their next state update. Contact
 ends when the hammer has separated and is moving away, or after a hard age
@@ -446,14 +448,14 @@ claim.
 The hard-facing experiment adds a relaxation state Q driven by changes in
 the compressed power g(η)=η^p:
 
-$$$$
+$$
 Q[k]=e^{-hT/\tau}Q[k-1]
 +K_f\left(g(\eta[k])-g(\eta[k-1])\right),
-$$$$
+$$
 
-$$$$
+$$
 F[k]=K g(\eta[k])+Q[k].
-$$$$
+$$
 
 This is a compact way to create a sharper force edge from a urethane/leather
 face without adding a synthetic noise click. It is not part of the accepted
@@ -467,19 +469,19 @@ Above MIDI 42 the CP-80 notes are double-strung. For each partial below
 kTwinBelow=40, the model emits a slow and a fast partner. If the partners
 had exactly the same frequency, their sum would be:
 
-$$$$
+$$
 y(t)=\left(A_s e^{-\sigma_s t}+A_f e^{-\sigma_f t}\right)
 \cos(\omega t+\phi).
-$$$$
+$$
 
 That is only a monotone sum inside the cosine. It has two decay constants but
 no beating nulls. Splitting the frequencies gives a cross term:
 
-$$$$
+$$
 |Y(t)|^2\sim A_s^2e^{-2\sigma_s t}+A_f^2e^{-2\sigma_f t}
 +2A_sA_f e^{-(\sigma_s+\sigma_f)t}
 \cos\!\left(2\pi(f_2-f_1)t\right).
-$$$$
+$$
 
 The beat frequency is the frequency separation |f_2-f_1|, not the half-split
 used internally by the code.
@@ -488,17 +490,17 @@ used internally by the code.
 
 For a small mistuning of c cents:
 
-$$$$
+$$
 \frac{\Delta f}{f}=2^{c/1200}-1
 \approx\frac{c\ln 2}{1200}
 =\frac{c}{1731.234}.
-$$$$
+$$
 
 The code emits f−dHz and f+dHz with:
 
-$$$$
+$$
 dHz=\frac12 f\frac{c}{1731.234}.
-$$$$
+$$
 
 The full pair separation is therefore approximately f c/1731.234; it grows
 with partial index. This agrees with the reference doublets, whose separation
@@ -506,11 +508,11 @@ is approximately constant in cents rather than constant in hertz.
 
 The note-specific interval is deterministic:
 
-$$$$
+$$
 h(m)=\operatorname{frac}(0.61803398875m),
 \qquad
 c(m)=0.4+(2.0-0.4)h(m)\ \mathrm{cents}.
-$$$$
+$$
 
 The golden-ratio fractional sequence is not claimed to reproduce each string's
 actual tuning. It is a deterministic decorrelator inside the measured
@@ -522,17 +524,17 @@ Below the cutoff, a partial carries total bridge weight
 slowW + kFastPartnerWeight. Above it, the fast partner is not emitted as a
 separate state, but the single proxy carries that same total weight:
 
-$$$$
+$$
 w_{n>40}=(w_{\mathrm{slow}}+w_{\mathrm{fast}})n_{\mathrm{strings}}.
-$$$$
+$$
 
 This is a computational truncation. It discards the fine temporal beating above
 partial 40 but does not discard the partial's nominal bridge energy. The old
 code kept only slowW above the cutoff, creating an artificial:
 
-$$$$
+$$
 20\log_{10}\!\left(\frac{slowW+1.15}{slowW}\right)
-$$$$
+$$
 
 step at a different frequency for every note. That was the hidden reason D#1
 looked dull while F#2 looked too bright; it was not a hammer-register law.
@@ -547,23 +549,23 @@ made F#2 beat when its reference did not.
 
 Equal-tempered MIDI pitch is:
 
-$$$$
+$$
 f_{\mathrm{ET}}(m)=440\,2^{(m-69)/12}.
-$$$$
+$$
 
 The CP-80 specification supplies a Railsback-like stretch curve in cents. A
 cents offset is converted to a multiplicative frequency factor:
 
-$$$$
+$$
 f_0(m)=440\,2^{\left(m-69+0.01\,c(m)\right)/12},
-$$$$
+$$
 
 where c(m) includes the printed stretch and any diagnostic global tuning
 offset. The inverse definition is:
 
-$$$$
+$$
 c=1200\log_2\!\left(\frac{f}{f_{\mathrm{ET}}}\right).
-$$$$
+$$
 
 The negative bass and positive treble offsets are treated as an instrument
 specification, not automatically as bad tuning in the recordings.
@@ -572,22 +574,22 @@ specification, not automatically as bad tuning in the recordings.
 
 Between two anchor rows A and B, the normalized coordinate is:
 
-$$$$
+$$
 t=\operatorname{clip}\!\left(\frac{m-m_A}{m_B-m_A},0,1\right).
-$$$$
+$$
 
 Quantities that are additive in their physical scale use linear interpolation:
 
-$$$$
+$$
 q(t)=(1-t)q_A+tq_B.
-$$$$
+$$
 
 Positive scale quantities spanning orders of magnitude use log interpolation:
 
-$$$$
+$$
 q(t)=\exp\!\left((1-t)\ln q_A+t\ln q_B\right)
 =q_A^{1-t}q_B^t.
-$$$$
+$$
 
 The current code uses log interpolation for B, b3, hammer K, and string
 mass; linear interpolation for strike position, b1, hammer mass, exponent,
@@ -626,41 +628,41 @@ mid/high notes. The production approximation is four shared low-Q resonators:
 Each body mode uses the same second-order recurrence as a string mode. At
 prepareBody() the impulse coefficient is first computed as:
 
-$$$$
+$$
 b_{0,i}=T r_i\frac{\sin(\omega_{d,i}T)}{\omega_{d,i}},
-$$$$
+$$
 
 then the code simulates four seconds and divides by the observed peak:
 
-$$$$
+$$
 b_i=\frac{b_{0,i}}{\max_k|y_i[k]|}.
-$$$$
+$$
 
 This makes bodyGain an interpretable mix rather than an accidental
 4×10⁻¹⁰ displacement scale.
 
 The body impulse is:
 
-$$$$
+$$
 I_{\mathrm{body}}
 =G_{\mathrm{body}}k_{\mathrm{body}}m_h\,v_{\mathrm{body}}
 \frac{m_{\mathrm{string,total}}}{m_{\mathrm{body,ref}}},
-$$$$
+$$
 
 with the impact-weighted speed law:
 
-$$$$
+$$
 v_{\mathrm{body}}
 =v_{\mathrm{ref}}
 \left(\frac{v_h(v)}{v_h(v_{\mathrm{ref}})}\right)^{1.25}.
-$$$$
+$$
 
 Each note schedules this impulse with a deterministic delay between 0 and
 15 ms:
 
-$$$$
+$$
 d_m=\left\lfloor h(m)(N_{\mathrm{delay}}+1)\right\rfloor.
-$$$$
+$$
 
 This is a deliberately small surrogate for different frame arrival paths. It
 prevents a chord from adding every shared-mode impulse at exactly the same
@@ -679,30 +681,30 @@ impact/mass scaling, not a complete frame mechanics derivation.
 The production medium brilliance setting uses lp=4400 Hz and hp=32 Hz.
 Two one-pole low-pass poles are placed at lp and 1.7 lp:
 
-$$$$
+$$
 k_1=e^{-2\pi f_{\mathrm{lp}}/f_s},
 \qquad
 k_2=e^{-2\pi(1.7f_{\mathrm{lp}})/f_s}.
-$$$$
+$$
 
 The equivalent two-pole recurrence in processBlock() is:
 
-$$$$
+$$
 y[k]=b_0x[k]+(k_1+k_2)z_1[k-1]-k_1k_2z_2[k-1],
 \qquad
 b_0=(1-k_1)(1-k_2).
-$$$$
+$$
 
 AC coupling is a one-pole high-pass implemented by subtracting a smoothed
 copy:
 
-$$$$
+$$
 h[k]=y[k]+a_h(h[k-1]-y[k]),
 \qquad
 v[k]=y[k]-h[k],
 \qquad
 a_h=e^{-2\pi f_{\mathrm{hp}}/f_s}.
-$$$$
+$$
 
 The low/medium/high brilliance corners are 3.3, 4.4, and 8.0 kHz. They are
 plausible panel-level settings, not a transcription of the CP-70B RC network.
@@ -713,15 +715,15 @@ The three panel filters are a low shelf at 150 Hz, a peaking filter at 800 Hz,
 and a high shelf at 3 kHz. For the middle peaking section, the code uses the
 standard biquad quantities:
 
-$$$$
+$$
 A=10^{G/40},
 \qquad
 \omega=2\pi f/f_s,
 \qquad
 \alpha=\frac{\sin\omega}{2Q},
-$$$$
+$$
 
-$$$$
+$$
 a_0=1+\alpha/A,
 \quad
 b_0=\frac{1+\alpha A}{a_0},
@@ -729,34 +731,34 @@ b_0=\frac{1+\alpha A}{a_0},
 b_1=\frac{-2\cos\omega}{a_0},
 \quad
 b_2=\frac{1-\alpha A}{a_0},
-$$$$
+$$
 
-$$$$
+$$
 a_1=b_1,
 \qquad
 a_2=\frac{1-\alpha/A}{a_0}.
-$$$$
+$$
 
 The state update is transposed direct-form II:
 
-$$$$
+$$
 y=b_0x+z_1,
 \qquad
 z_1=b_1x-a_1y+z_2,
 \qquad
 z_2=b_2x-a_2y.
-$$$$
+$$
 
 The hardware has a center detent, so the engine default is now 0/0/0 dB.
 The historical −5 and −8 dB middle cuts were corpus compensation and were
 removed from the default. The optional light EQ is an offline diagnostic,
 not part of the physical string engine:
 
-$$$$
+$$
 y=x+(10^{0.55/20}-1)x_{20\text{--}250}
  +(10^{-0.75/20}-1)x_{600\text{--}1600}
  +(10^{1.20/20}-1)x_{2500\text{--}6500}.
-$$$$
+$$
 
 It is a useful description of a small chord-derived residual, but shipping it
 would make the plugin dependent on a post-process and would blur whether the
@@ -769,17 +771,17 @@ occurs at sample j, the engine processes [0,j), applies the event, then
 processes [j,n). This is why note timing does not depend on the host buffer
 size. The adapter also linearly ramps volume over each block:
 
-$$$$
+$$
 g[i]=g_0+\frac{i+1}{n}(g_1-g_0).
-$$$$
+$$
 
 The JUCE wrapper owns the parameter snapshot and sends note/pedal events to the
 adapter. It applies a fixed 44x line-output calibration after the model and
 tremolo. That is approximately:
 
-$$$$
+$$
 20\log_{10}(44)=32.87\ \mathrm{dB}.
-$$$$
+$$
 
 The gain is a plugin electrical-boundary calibration, not a change to the
 modal model or the offline waveform comparisons.
@@ -787,21 +789,21 @@ modal model or the offline waveform comparisons.
 With tremolo enabled, depth d is a fraction and θ advances at the selected
 speed:
 
-$$$$
+$$
 \theta[k+1]=\theta[k]+\frac{2\pi f_{\mathrm{trem}}}{f_s},
-$$$$
+$$
 
-$$$$
+$$
 L[k]=x[k]\left(1-\frac d2+\frac d2\cos\theta[k]\right),
 \qquad
 R[k]=x[k]\left(1-\frac d2-\frac d2\cos\theta[k]\right).
-$$$$
+$$
 
 The modulation is antiphase, not a stereo pan. The sum is:
 
-$$$$
+$$
 L[k]+R[k]=(2-d)x[k].
-$$$$
+$$
 
 The plugin smoke test checks this identity, finite output, tremolo-off dual
 mono, and nonzero dry level. pluginval then checks the VST3 across common
@@ -814,11 +816,11 @@ lifecycles; auval is the separate AU check.
 
 For a windowed segment x_j with Hann window w_j, the analysis spectrum is:
 
-$$$$
+$$
 X_k=\sum_{j=0}^{N-1}w_jx_j e^{-i2\pi kj/N},
 \qquad
 f_k=\frac{k f_s}{N}.
-$$$$
+$$
 
 The corpus evaluator uses a 2¹⁸-point real FFT for fixed frequency-bin
 resolution. The short attack and longer sustain windows are zero-padded to the
@@ -834,13 +836,13 @@ leakage and therefore affects a weak high partial.
 Let A_1 be the measured H1 peak amplitude in the attack window. For a band
 B=[f_l,f_h), the evaluator computes:
 
-$$$$
+$$
 P_{\mathcal B}=\sum_{k:f_k\in\mathcal B}|X_k|^2,
-$$$$
+$$
 
-$$$$
+$$
 L_{\mathcal B}=10\log_{10}\!\left(\frac{P_{\mathcal B}}{A_1^2}\right).
-$$$$
+$$
 
 This is a power-band level referenced to an amplitude peak squared. It is not
 the RMS dBFS of the whole file. The useful consequence is that a per-file
@@ -870,10 +872,10 @@ when the note's own fundamental is 261 Hz or higher.
 The reference file's late tail is used as a noise estimate. For an attack band
 power P_a and tail power P_t:
 
-$$$$
+$$
 \mathrm{SNR}_{\mathrm{tail}}
 =10\log_{10}\!\left(\frac{P_a}{P_t}\right).
-$$$$
+$$
 
 The tail is the final 400 ms, ending 20 ms before EOF, with a minimum 50 ms
 separation from the measured window. If a reference attack is less than 12 dB
@@ -891,26 +893,26 @@ spectral_balance.py bandpass-filters the whole waveform with a sixth-order
 Butterworth filter, computes the analytic signal with a Hilbert transform,
 and takes its magnitude:
 
-$$$$
+$$
 z(t)=\operatorname{Hilbert}\{x_{\mathcal B}(t)\},
 \qquad
 E(t)=|z(t)|.
-$$$$
+$$
 
 For an exponentially decaying amplitude:
 
-$$$$
+$$
 E(t)=E_0e^{-\sigma t}
 \quad\Longrightarrow\quad
 \ln E(t)=\ln E_0-\sigma t.
-$$$$
+$$
 
 The script averages the envelope over 2 ms blocks, discards samples below 45 dB
 relative to the band peak, and fits the slope:
 
-$$$$
+$$
 \widehat\sigma=-\operatorname{slope}\bigl(t,\ln E(t)\bigr).
-$$$$
+$$
 
 This is an amplitude-decay constant. A power envelope would decay as
 e⁻²σt and would give a factor-of-two different slope. The project always
@@ -925,9 +927,9 @@ is why the standard window is 50–300 ms and why the tail gate is separate.
 The tracker first searches for H1 in a broad 0.94 f_0 to 1.06 f_0 window.
 For each next partial it predicts:
 
-$$$$
+$$
 \widehat f_n=f_1n\sqrt{1+Bn^2},
-$$$$
+$$
 
 searches within a tolerance, takes the strongest local peak, and rejects peaks
 below −80 dB relative to H1 in the corpus evaluator.
@@ -940,11 +942,11 @@ the next prediction. This was a measurement failure, not a model failure.
 The harmonic summary retains tracked partials above −70 dB relative to H1 and
 fits a straight line to amplitude versus log partial index:
 
-$$$$
+$$
 \ell_n=20\log_{10}\!\left(\frac{A_n}{A_1}\right),
 \qquad
 \ell_n\approx\alpha+\beta\log_2 n.
-$$$$
+$$
 
 The fitted β is reported as spectral tilt in dB/octave. The intercept is not
 the important quantity when H1-relative levels are already used; the slope
@@ -956,15 +958,15 @@ partial number.
 H1 is re-found in the 30–200 ms, 200–500 ms, and 1–2 s windows. For nominal
 equal-tempered frequency f_ET, pitch offset is:
 
-$$$$
+$$
 c(t)=1200\log_2\!\left(\frac{f_1(t)}{f_{\mathrm{ET}}}\right).
-$$$$
+$$
 
 The reported glide is more robustly measured relative to the early window:
 
-$$$$
+$$
 \Delta c_w=1200\log_2\!\left(\frac{f_{1,w}}{f_{1,\mathrm{early}}}\right).
-$$$$
+$$
 
 The production model has a static Railsback curve. FF tension glide is a real
 reference observable but remains deferred because it requires time-varying
@@ -976,11 +978,11 @@ For each of H1–H6, the sustain signal is bandpassed in a narrow interval aroun
 the tracked partial, then Hilbert-demodulated. Let e_dB(t)=20log10(E(t)).
 The code removes a least-squares linear decay trend and reports:
 
-$$$$
+$$
 \mathrm{AM}_{\mathrm{rms}}
 =\sqrt{\frac{1}{M}\sum_{j=1}^{M}
 \left(e_{\mathrm{dB}}(t_j)-\widehat e_{\mathrm{trend}}(t_j)\right)^2}.
-$$$$
+$$
 
 This measures envelope fluctuation in dB, not a unique physical string split.
 It is useful for detecting the old degenerate-unison mistake and the later
@@ -993,15 +995,15 @@ exchange energy in the current model.
 For any scalar observable q, the evaluator stores the signed model-minus-
 reference residual:
 
-$$$$
+$$
 e_q=q_{\mathrm{model}}-q_{\mathrm{reference}}.
-$$$$
+$$
 
 For a finite set of residuals e_i, the row RMSE is:
 
-$$$$
+$$
 \mathrm{RMSE}(e)=\sqrt{\frac{1}{N}\sum_{i=1}^{N}e_i^2}.
-$$$$
+$$
 
 The sign is retained in individual columns because a bias matters. The RMSE is
 used for ordering because it penalizes large misses without allowing positive
@@ -1010,9 +1012,9 @@ and negative errors to cancel.
 For H1–H12, the harmonic residual is in dB relative to each file's H1. The
 harmonic bias is also stored:
 
-$$$$
+$$
 \mathrm{bias}(e)=\frac{1}{N}\sum_i e_i.
-$$$$
+$$
 
 A negative bias says the model is generally too weak; a slope in residual versus
 log₂(n) says the physical envelope has the wrong shape.
@@ -1022,10 +1024,10 @@ log₂(n) says the physical envelope has the wrong shape.
 For a sample row, the diagnostic priority score is the RMS of six component
 RMSEs:
 
-$$$$
+$$
 P=\sqrt{\frac{1}{6}\left(
 R_A^2+R_S^2+R_{BA}^2+R_{BS}^2+R_{HA}^2+R_{HS}^2\right)}.
-$$$$
+$$
 
 Here A/S are attack/sustain spectral-band RMSEs, BA/BS are body-band RMSEs,
 and HA/HS are H1–H12 harmonic RMSEs. Missing or invalid components are
@@ -1046,12 +1048,12 @@ The canonical demo has four staggered six-note chords plus an upper-register
 figure. evaluate_demo.py resamples both files to 44.1 kHz, applies sixth-order
 zero-phase Butterworth bands, and measures RMS:
 
-$$$$
+$$
 \mathrm{RMS}_{\mathcal B}
 =20\log_{10}\!\left(
 \sqrt{\frac{1}{M}\sum_{j\in\mathcal B}x_j^2}
 \right).
-$$$$
+$$
 
 The chord bands are 20–60, 60–120, 120–220, 120–2000, 2000–4000, and
 4000–8000 Hz. It also measures modulation in 300–3000, 1000–5000, and
@@ -1059,10 +1061,10 @@ The chord bands are 20–60, 60–120, 120–220, 120–2000, 2000–4000, and
 
 The model/reference delta is:
 
-$$$$
+$$
 \Delta_{\mathcal B}=\mathrm{RMS}_{\mathcal B,\mathrm{model}}
 -\mathrm{RMS}_{\mathcal B,\mathrm{reference}}.
-$$$$
+$$
 
 This is where the alternating body-polarity experiment failed: every isolated
 note looked reasonable, but a balanced chord drove the shared body state toward
@@ -1078,12 +1080,12 @@ render_reference_match.py renders the model at the SFZ layer midpoint, resamples
 it to the reference sample rate, and trims/pads it to exactly the reference
 duration. It then chooses:
 
-$$$$
+$$
 g_{\mathrm{peak}}=
 \frac{\max|x_{\mathrm{ref}}|}{\max|x_{\mathrm{model}}|},
 \qquad
 x_{\mathrm{matched}}=g_{\mathrm{peak}}x_{\mathrm{model}}.
-$$$$
+$$
 
 This is the correct A/B for timbre independent of that file's recorder gain.
 It is not the correct test for whether D#1, C4, and B7 have the same relative
@@ -1093,9 +1095,9 @@ level as the real instrument.
 
 render_lib.py uses one gain across all rendered notes and layers:
 
-$$$$
+$$
 g_{\mathrm{global}}=\frac{0.89}{\max_{m,\ell,t}|x_{m,\ell}(t)|}.
-$$$$
+$$
 
 This preserves model-relative register and velocity level, but it does not
 correct for the sample pack's file-by-file normalization.
@@ -1105,10 +1107,10 @@ correct for the sample pack's file-by-file normalization.
 The reference demo can use model peak measurements to scale each replayed
 reference voice:
 
-$$$$
+$$
 g_{\mathrm{inverse}}(m,v)=
 \frac{A_{\mathrm{model}}(m,v)}{A_{\mathrm{reference\ sample}}}.
-$$$$
+$$
 
 It then applies the same 11-second score, resamples nearby notes by a rational
 factor, applies a release ramp, sums voices, and normalizes the final demo peak
@@ -1131,63 +1133,63 @@ than silently folded into every error metric.
 cal.py first measures targets on forte files and then repeats six passes.
 The target vector at each selected note contains:
 
-$$$$
+$$
 \mathbf q^*=(\sigma_{\mathrm{slow}},
 \sigma_{\mathrm{fast}},
 \mathrm{tilt},B,f_1,
 \operatorname{median}(\sigma_{2\text{--}4\,\mathrm{kHz}})).
-$$$$
+$$
 
 The production update rules are intentionally scalar and clipped.
 
 For b1:
 
-$$$$
+$$
 b_1^{new}=b_1^{old}\,
 \operatorname{clip}\!\left(
 \frac{\sigma^*_{\mathrm{slow}}}{\max(\widehat\sigma_{\mathrm{slow}},10^{-3})},
 0.4,2.5\right).
-$$$$
+$$
 
 For the fast partner:
 
-$$$$
+$$
 r^*_{fs}=\frac{\sigma^*_{\mathrm{fast}}}{\sigma^*_{\mathrm{slow}}},
 \qquad
 \widehat r_{fs}=\frac{\widehat\sigma_{\mathrm{fast}}}
 {\max(\widehat\sigma_{\mathrm{slow}},10^{-3})},
-$$$$
+$$
 
-$$$$
+$$
 \mathrm{twinDamp}^{new}
 =\operatorname{clip}\!\left(
 \mathrm{twinDamp}^{old}
 \operatorname{clip}\!\left(\frac{r^*_{fs}}{\max(\widehat r_{fs},0.01)},0.5,2.0\right),
 1.05,9.0\right).
-$$$$
+$$
 
 For b3, the script uses the excess decay above the slow component:
 
-$$$$
+$$
 b_3^{new}=b_3^{old}\,
 \operatorname{clip}\!\left(
 \frac{\sigma^*_{2\text{--}4k}-\sigma^*_{\mathrm{slow}}}
 {\max(\widehat\sigma_{2\text{--}4k}-\widehat\sigma_{\mathrm{slow}},10^{-3})},
 0.5,2.0\right).
-$$$$
+$$
 
 For inharmonicity:
 
-$$$$
+$$
 B^{new}=B^{old}\,
 \operatorname{clip}\!\left(\frac{B^*}{\widehat B},0.5,2.0\right).
-$$$$
+$$
 
 The hammer width is only clamped:
 
-$$$$
+$$
 hW\leftarrow\operatorname{clip}(hW,0.002,0.02).
-$$$$
+$$
 
 The algorithm works because each selected measurement is approximately more
 sensitive to one parameter than the others. It is not a gradient method and
@@ -1204,25 +1206,25 @@ fit_hammer.py tests a global p over a small grid. It compresses the attack
 bands into four values: 0.1–1, 1–2, combined 2–4, and 4–6 kHz. Combining 2–3
 and 3–4 kHz is done in the power domain:
 
-$$$$
+$$
 L_{2\text{--}4}
 =10\log_{10}\!\left(
 10^{L_{2\text{--}3}/10}+10^{L_{3\text{--}4}/10}
 \right).
-$$$$
+$$
 
 For each note it compares the loudest available layer with the softest:
 
-$$$$
+$$
 \Delta L_{n,b}=L_{n,b}^{high}-L_{n,b}^{low}.
-$$$$
+$$
 
 The global loss is the mean squared error over notes and bands:
 
-$$$$
+$$
 J(p)=\frac{1}{N}\sum_n\frac{1}{4}\sum_b
 \left(\Delta L_{n,b}^{model}(p)-\Delta L_{n,b}^{ref}\right)^2.
-$$$$
+$$
 
 Taking a layer difference cancels most per-file gain. The script reports the
 best grid point but never edits anchors automatically. Current production uses
@@ -1233,7 +1235,7 @@ the global p=2 candidate and a global rate-hardening q=2.25.
 pulse_sweep.cpp deliberately removes the hammer contact solver and drives the
 existing modal bank with a normalized beta-shaped pulse:
 
-$$$$
+$$
 F(u;\rho,\phi)=
 \frac{u^{\rho}(1-u)^{\phi}}
 {u_*^{\rho}(1-u_*)^{\phi}},
@@ -1241,21 +1243,21 @@ F(u;\rho,\phi)=
 u=\frac{k}{K-1},
 \qquad
 u_*=\frac{\rho}{\rho+\phi}.
-$$$$
+$$
 
 The parameters are duration, rise exponent, and fall exponent. The fitting
 target is the first eight harmonic ratios in a 25–240 ms window:
 
-$$$$
+$$
 r_h=20\log_{10}\!\left(\frac{A_h}{A_1}\right),
 \qquad h=2,\ldots,8.
-$$$$
+$$
 
 The weighted loss is:
 
-$$$$
+$$
 J=\sum_{h=2}^{8}w_h^2(r_h^{model}-r_h^{ref})^2,
-$$$$
+$$
 
 with weights 1.5, 1.5, 1.2, 1.0, 0.6, 0.3, 0.15. The optimizer is a
 coarse grid followed by three shrinking local grids. This is not a measured
@@ -1267,9 +1269,9 @@ shape?
 
 fit_hybrid.py sweeps four opt-in parameters:
 
-$$$$
+$$
 \boldsymbol\theta=(Z\text{-scale},c,K\text{-scale},p).
-$$$$
+$$
 
 For each note/layer it computes the same H2–H8 ratio vector and sums weighted
 squared errors. It uses coordinate descent: choose the best value of one
@@ -1284,16 +1286,16 @@ to promote its best two-note setting to production.
 fit_strike.py tries to separate a smooth hammer envelope from the sharp comb
 caused by strike position. For candidate x=x_0/L, it subtracts:
 
-$$$$
+$$
 C_n(x)=20\log_{10}\!\left(
 \max\left(|\sin(\pi n x)|,0.03\right)\right)
-$$$$
+$$
 
 from the measured partial levels. It then fits a quadratic smooth residual:
 
-$$$$
+$$
 r_n\approx\beta_0+\beta_1\log_2n+\beta_2(\log_2n)^2,
-$$$$
+$$
 
 and scores the candidate by residual RMS. The floor 0.03 prevents an exact
 comb null from making the logarithm singular; it is not a physical noise floor.
@@ -1372,10 +1374,10 @@ make check runs a 30-second dense-note stress test. It records:
 
 The finite-value condition is simply:
 
-$$$$
+$$
 \forall k,\quad x[k]\in\mathbb R
 \quad\text{and}\quad |x[k]|<\infty.
-$$$$
+$$
 
 The oversized-block test matters because CP80::process() chunks requests into
 maxBlockSize; it is a host-boundary invariant, not a timbre metric.
@@ -1385,14 +1387,14 @@ maxBlockSize; it is a host-boundary invariant, not a timbre metric.
 The same event stream is rendered with 64-sample and 1024-sample blocks. The
 check computes:
 
-$$$$
+$$
 e_\infty=\max_k|x_{64}[k]-x_{1024}[k]|,
-$$$$
+$$
 
-$$$$
+$$
 e_{\mathrm{rms}}=
 \sqrt{\frac{1}{N}\sum_k(x_{64}[k]-x_{1024}[k])^2}.
-$$$$
+$$
 
 The threshold is e_inf ≤ 5×10⁻⁶; the remaining difference should be roundoff,
 not moved MIDI events or block-quantized body impulses.

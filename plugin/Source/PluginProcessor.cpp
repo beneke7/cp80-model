@@ -7,9 +7,22 @@
 namespace {
 constexpr float kPi = 3.14159265358979323846f;
 constexpr float kTwoPi = 2.0f * kPi;
-// The calibrated engine emits its raw common-voltage scale.  Offline renders
-// normalise for comparison; the plugin needs a fixed line-output calibration.
-constexpr float kLineOutputGain = 44.0f; // +32.9 dB, before no further limiting
+// The engine emits its raw common-voltage scale; offline renders normalise for
+// comparison, so the plugin needs one fixed output calibration.
+//
+// This constant is NOT derived from the reference corpus and cannot be: those files
+// are per-file peak-normalised (every velocity layer peaks at ~0 dBFS, sd < 0.3 dB),
+// so they carry no absolute level and no inter-layer level either. Nor does the
+// hardware help — the CP-80's -20 dBm/600R patch out is an analog power reference
+// with no defined mapping to dBFS.
+//
+// So it is anchored to convention instead, and measured:
+//   fortissimo 5-note chord   -18.3 dBFS attack-RMS   (standard alignment level)
+//   fast pedalled ff run      -2.6 dBFS peak          (worst reachable by ten fingers)
+//   24 simultaneous ff notes  +1.2 dBFS               (clips, but is not playable)
+// There is deliberately no limiter. Raising this much above 44 puts the pedalled
+// case into clipping.
+constexpr float kLineOutputGain = 44.0f; // +32.9 dB
 }
 
 juce::AudioProcessorValueTreeState::ParameterLayout

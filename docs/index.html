@@ -10,7 +10,7 @@
 <meta property="og:image" content="cp80.jpg">
 <style>
 :root{
-  --page:#fffee6; --ink:#1a1a18; --spot:#c8462f; --rule:#1a1a18;
+  --page:#ffffe6; --ink:#1a1a18; --spot:#c8462f; --rule:#1a1a18;
   --display:"Futura","Futura PT","Helvetica Neue",Helvetica,Arial,sans-serif;
   --sans:"Helvetica Neue","Helvetica","Arial Narrow",Arial,sans-serif;
 }
@@ -36,7 +36,10 @@ h1{
 .rule{border:0; border-top:1.5px solid var(--rule); margin:22px 0 0}
 
 figure{margin:0}
-figure img{display:block; width:100%; height:auto; mix-blend-mode:multiply}
+/* No blend mode: the photo's own background is #fefeeb against a #ffffe6 page, which
+   already reads as seamless. Multiply would drag its blue channel to 212 and stamp a
+   visible yellow rectangle onto the page. */
+figure img{display:block; width:100%; height:auto}
 
 .lede{font-size:clamp(20px,2.6vw,25px); line-height:1.45; margin:8px 0 0; max-width:34em}
 .lede strong{color:var(--spot); font-weight:700}

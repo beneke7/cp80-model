@@ -5,6 +5,7 @@ reference/*.wav
 __pycache__/
 .venv/
 *.o
-0
-1
+
+# Analysis plots are throwaway; the plugin's hero image is not.
 *.png
+!plugin/Resources/*.png

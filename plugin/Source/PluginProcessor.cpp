@@ -159,14 +159,18 @@ void CP80PluginProcessor::renderTremolo(float* left, float* right, int numSample
 void CP80PluginProcessor::getStateInformation(juce::MemoryBlock& destData)
 {
     juce::MemoryOutputStream stream(destData, false);
-    parameters.copyState().writeToStream(stream);
+    auto state = parameters.copyState();
+    state.setProperty("plateVisible", plateVisible, nullptr);
+    state.writeToStream(stream);
 }
 
 void CP80PluginProcessor::setStateInformation(const void* data, int sizeInBytes)
 {
     const auto state = juce::ValueTree::readFromData(data, static_cast<size_t>(sizeInBytes));
-    if (state.isValid())
+    if (state.isValid()) {
+        plateVisible = state.getProperty("plateVisible", true);
         parameters.replaceState(state);
+    }
 }
 
 juce::AudioProcessorEditor* CP80PluginProcessor::createEditor()

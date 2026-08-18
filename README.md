@@ -4,6 +4,24 @@ Real-time physical model of the Yamaha CP-70/CP-80 electric grand. Modal synthes
 a nonlinear hammer-contact model and piezo bridge-force readout. Header-only core, no
 dependencies, ~1% of a core for a chord.
 
+Ships as **VST3, AU and a standalone app** for macOS, Windows and Linux. Prebuilt
+binaries are on the [releases page](../../releases); CI builds all three platforms on
+every push.
+
+`src/cp80.hpp` is the whole engine and depends on nothing but the C++17 standard library.
+JUCE is needed only for the plugin wrapper.
+
+```
+# plugin — JUCE 8.0.12 is fetched automatically; point JUCE_DIR at a local
+# checkout instead if you already have one and want to skip the download.
+cmake -S plugin -B build/plugin -DCMAKE_BUILD_TYPE=Release
+cmake --build build/plugin --config Release --parallel
+ctest --test-dir build/plugin -C Release --output-on-failure
+```
+
+Local builds install straight into your user plug-in folders. Pass
+`-DCP80_COPY_AFTER_BUILD=OFF` to stop that.
+
 ```
 make all && make demo      # -> out/demo.wav
 make bench                 # component profile
@@ -13,9 +31,6 @@ make pulse_probe           # prescribed-pulse modal diagnostic
 make fit_pulse             # fit an asymmetric force pulse through the modal bank
 make fit_hybrid            # fit opt-in contact impedance/loss against attack spectra
 make adapter_render        # render the canonical score through the host-neutral adapter
-cmake -S plugin -B build/plugin -DCMAKE_BUILD_TYPE=Release
-cmake --build build/plugin --config Release --parallel 8
-ctest --test-dir build/plugin -C Release --output-on-failure
 CP80_REFERENCE_DIR=... .venv/bin/python tools/attack_probe.py  # attack-band diagnostic
 CP80_REFERENCE_DIR=... .venv/bin/python tools/spectral_balance.py --notes 27 42
 CP80_BODY_GAIN=0 .venv/bin/python tools/render_lib.py out/model-lib-body  # string-only A/B
@@ -161,3 +176,15 @@ Do not optimize the priority score directly. Use it to choose the next measureme
 then inspect the corresponding columns across the full register and velocity layer.
 That keeps a physically meaningful parameter from becoming a per-note correction for
 one recording artifact.
+
+## Licence
+
+AGPL-3.0-or-later. See `LICENSE`.
+
+The plugin wrapper links [JUCE 8](https://juce.com), which is dual-licensed AGPLv3 or
+commercial — this project takes the AGPLv3 option, which is what makes the whole thing
+copyleft. `src/cp80.hpp`, the engine, is standalone and touches no JUCE.
+
+`plugin/Resources/cp80.png` is a Yamaha product photograph, included for identification
+of the modelled instrument. Yamaha and CP-80 are trademarks of Yamaha Corporation; this
+project is not affiliated with or endorsed by Yamaha.

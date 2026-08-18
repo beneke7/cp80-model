@@ -36,6 +36,8 @@ public:
     void setStateInformation(const void*, int) override;
 
     juce::AudioProcessorValueTreeState parameters;
+    // Editor chrome, not a parameter: hosts should restore it but not automate it.
+    bool plateVisible = true;
 
 private:
     static juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();

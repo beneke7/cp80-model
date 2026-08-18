@@ -16,13 +16,21 @@ constexpr float kTwoPi = 2.0f * kPi;
 // hardware help — the CP-80's -20 dBm/600R patch out is an analog power reference
 // with no defined mapping to dBFS.
 //
-// So it is anchored to convention instead, and measured:
-//   fortissimo 5-note chord   -18.3 dBFS attack-RMS   (standard alignment level)
-//   fast pedalled ff run      -2.6 dBFS peak          (worst reachable by ten fingers)
-//   24 simultaneous ff notes  +1.2 dBFS               (clips, but is not playable)
-// There is deliberately no limiter. Raising this much above 44 puts the pedalled
-// case into clipping.
-constexpr float kLineOutputGain = 44.0f; // +32.9 dB
+// So it is anchored to convention instead. Commercial virtual instruments generally
+// land with ordinary playing peaking -12 to -6 dBFS, and this now sits in that range
+// rather than the ~10 dB below it that it used to.
+//
+// Measured at the default knob position (0.8, which the taper below turns into 0.64):
+//   fortissimo 5-note chord   -5.9 dBFS peak
+//   fast pedalled ff run      -0.5 dBFS peak    worst reachable by ten fingers
+// Knob at maximum adds a further +3.9 dB.
+//
+// Peaks past unity are not destructive in a host: plug-in busses are float, and the
+// only hard converter sits after the user's fader. The standalone app is the exception,
+// which is why the default leaves the pedalled worst case just under 0 dBFS. There is
+// deliberately no limiter — an acoustic piano is a high-crest-factor source and
+// flattening it would cost the attack.
+constexpr float kLineOutputGain = 88.0f; // +38.9 dB
 }
 
 juce::AudioProcessorValueTreeState::ParameterLayout
@@ -96,7 +104,11 @@ void CP80PluginProcessor::processBlock(juce::AudioBuffer<float>& buffer,
     float* right = buffer.getWritePointer(1);
 
     cp80::AdapterParameters values;
-    values.volume = volumeParam->load(std::memory_order_relaxed);
+    // Square-law taper. The knob is the hardware VOLUME control, 0 to full, but a
+    // linear multiply crams the whole useful range into the bottom third: 0.5 would
+    // be -6 dB and the top half of the travel would do almost nothing.
+    const float v = volumeParam->load(std::memory_order_relaxed);
+    values.volume = v * v;
     values.bassDb = bassParam->load(std::memory_order_relaxed);
     values.midDb = middleParam->load(std::memory_order_relaxed);
     values.trebleDb = trebleParam->load(std::memory_order_relaxed);

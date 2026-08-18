@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CP-80 — Electric Grand</title>
+<meta name="description" content="A real-time physical model of the Yamaha CP-70/CP-80 electric grand. Free and open source. VST3, AU and standalone for macOS, Windows and Linux.">
+<meta property="og:title" content="CP-80 — Electric Grand">
+<meta property="og:description" content="A physical model, not a sample library. Free and open source.">
+<meta property="og:image" content="cp80.jpg">
+<style>
+:root{
+  --page:#fffee6; --ink:#1a1a18; --spot:#c8462f; --rule:#1a1a18;
+  --display:"Futura","Futura PT","Helvetica Neue",Helvetica,Arial,sans-serif;
+  --sans:"Helvetica Neue","Helvetica","Arial Narrow",Arial,sans-serif;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0; background:var(--page); color:var(--ink);
+  font-family:var(--sans); font-size:17px; line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:860px; margin:0 auto; padding:0 26px 96px}
+
+/* masthead ------------------------------------------------------------ */
+header{padding:64px 0 0}
+h1{
+  font-family:var(--display); font-weight:800; font-size:clamp(44px,9vw,76px);
+  letter-spacing:-.02em; line-height:.95; margin:0; display:inline-block;
+}
+.kicker{
+  font-weight:700; font-size:13px; letter-spacing:.14em; text-transform:uppercase;
+  opacity:.55; margin-left:14px; vertical-align:middle;
+}
+.rule{border:0; border-top:1.5px solid var(--rule); margin:22px 0 0}
+
+figure{margin:0}
+figure img{display:block; width:100%; height:auto; mix-blend-mode:multiply}
+
+.lede{font-size:clamp(20px,2.6vw,25px); line-height:1.45; margin:8px 0 0; max-width:34em}
+.lede strong{color:var(--spot); font-weight:700}
+
+/* downloads ----------------------------------------------------------- */
+h2{
+  font-family:var(--display); font-weight:800; font-size:15px;
+  letter-spacing:.14em; text-transform:uppercase; margin:56px 0 0;
+}
+h2+.rule{margin-top:10px}
+.dl{list-style:none; padding:0; margin:0}
+.dl li{border-bottom:1px solid rgba(26,26,24,.15)}
+.dl a{
+  display:flex; align-items:baseline; gap:16px; flex-wrap:wrap;
+  padding:16px 2px; text-decoration:none; color:inherit;
+}
+.dl a:hover{color:var(--spot)}
+.dl .os{font-weight:700; font-size:19px; min-width:104px}
+.dl .fmt{font-size:14px; opacity:.6; flex:1}
+.dl .arrow{font-size:19px; opacity:.35}
+.dl a:hover .arrow{opacity:1; transform:translateX(3px)}
+.dl .arrow{transition:transform .12s ease, opacity .12s ease}
+
+.note{font-size:14.5px; opacity:.65; margin:18px 0 0; max-width:44em}
+.note code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:.92em}
+
+/* body copy ----------------------------------------------------------- */
+.cols{display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:34px; margin-top:26px}
+.cols h3{font-size:16px; margin:0 0 6px; font-weight:700}
+.cols p{margin:0; font-size:15.5px; opacity:.8}
+
+a{color:var(--spot)}
+footer{margin-top:64px; font-size:14px; opacity:.6}
+footer p{margin:.5em 0}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>CP-80</h1><span class="kicker">Electric Grand</span>
+  <hr class="rule">
+</header>
+
+<figure>
+  <img src="cp80.jpg" width="1254" height="1018"
+       alt="A Yamaha CP-80 electric grand piano photographed from above with the lid removed, showing the harp, strings and hammer action.">
+</figure>
+
+<p class="lede">
+  A <strong>physical model</strong>, not a sample library. Struck strings solved in
+  real time — stiffness, hammer contact and the piezo bridge pickup that gave the
+  CP-80 its bite.
+</p>
+
+<h2>Download</h2>
+<hr class="rule">
+<ul class="dl">
+  <li><a href="https://github.com/beneke7/cp80-model/releases/latest">
+    <span class="os">macOS</span>
+    <span class="fmt">VST3 · Audio Unit · Standalone — universal, signed &amp; notarised</span>
+    <span class="arrow">→</span></a></li>
+  <li><a href="https://github.com/beneke7/cp80-model/releases/latest">
+    <span class="os">Windows</span>
+    <span class="fmt">VST3 · Standalone — 64-bit</span>
+    <span class="arrow">→</span></a></li>
+  <li><a href="https://github.com/beneke7/cp80-model/releases/latest">
+    <span class="os">Linux</span>
+    <span class="fmt">VST3 · Standalone — x86-64</span>
+    <span class="arrow">→</span></a></li>
+</ul>
+<p class="note">
+  Free and open source under the AGPLv3. Build it yourself from
+  <a href="https://github.com/beneke7/cp80-model">the source</a> — the engine is a
+  single header with no dependencies.
+</p>
+
+<h2>What it is</h2>
+<hr class="rule">
+<div class="cols">
+  <div>
+    <h3>Stiff strings</h3>
+    <p>The CP-80's strings are short and under enormous tension, so their partials
+    stretch sharp far faster than a concert grand's. That inharmonicity is the
+    instrument's signature, and it falls out of the physics rather than being dialled in.</p>
+  </div>
+  <div>
+    <h3>Hammer contact</h3>
+    <p>A nonlinear felt-and-urethane contact law with rate hardening. Hit it harder and
+    the contact gets shorter and stiffer, so the tone brightens the way a real hammer
+    does — no velocity crossfades.</p>
+  </div>
+  <div>
+    <h3>Piezo bridge</h3>
+    <p>Output is read as force at the bridge, exactly where the real pickups sit. It is
+    why the model sounds electric rather than acoustic, and why it needs no corrective EQ.</p>
+  </div>
+  <div>
+    <h3>The panel</h3>
+    <p>Volume, a three-band tone stack with a centre detent, the three-position
+    brilliance switch, and the tremolo — antiphase across the stereo field, as the
+    original's twin amplifiers were wired.</p>
+  </div>
+</div>
+
+<h2>Requirements</h2>
+<hr class="rule">
+<p class="note">
+  macOS 11 or later (Apple silicon and Intel) · Windows 10 or later · Linux with ALSA
+  or JACK. Roughly 9% of one core with all 24 voices sounding.
+  Yamaha and CP-80 are trademarks of Yamaha Corporation; this project is not affiliated
+  with or endorsed by Yamaha.
+</p>
+
+<footer>
+  <hr class="rule">
+  <p><a href="https://github.com/beneke7/cp80-model">Source on GitHub</a> ·
+     <a href="https://github.com/beneke7/cp80-model/blob/main/spec_claude.md">The mathematics</a> ·
+     <a href="https://github.com/beneke7/cp80-model/blob/main/LICENSE">AGPLv3</a></p>
+</footer>
+
+</div>
+</body>
+</html>

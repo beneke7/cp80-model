@@ -160,11 +160,16 @@ static constexpr int kNumAnchors = int(sizeof(kAnchors) / sizeof(Anchor));
 //  reference sample library's own per-region volume trims, which balance the top octave
 //  7--10 dB louder relative to the middle than this model does.
 //
-//  This is a conservative first pass: it closes roughly 60% of that gap. Set
-//  kTrebleLiftDbPerSemi to 0 for the raw fitted behaviour.
-static constexpr int   kTrebleLiftKnee      = 60;      // C4; no lift at or below
-static constexpr float kTrebleLiftDbPerSemi = 0.125f;  // +1.5 dB per octave
-static constexpr float kTrebleLiftMaxDb     = 6.0f;    // reached at MIDI 108
+//  Comparing peaks understated it. Integrated energy falls off far faster than peak
+//  does going up the keyboard -- at MIDI 107 the peak is only 4 dB down but the energy
+//  is 24 dB down, because treble notes decay so much faster. The ear weights energy,
+//  which is why the shortfall is audible well below where a peak comparison finds it,
+//  and why the knee starts at C3 rather than C4.
+//
+//  Set kTrebleLiftDbPerSemi to 0 for the raw fitted behaviour.
+static constexpr int   kTrebleLiftKnee      = 48;      // C3; no lift at or below
+static constexpr float kTrebleLiftDbPerSemi = 0.15f;   // +1.8 dB per octave
+static constexpr float kTrebleLiftMaxDb     = 9.0f;    // reached at MIDI 108
 
 inline float trebleLiftGain(int note)
 {

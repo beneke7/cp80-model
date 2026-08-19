@@ -151,6 +151,30 @@ static Anchor kAnchors[] = {
 static constexpr int kNumAnchors = int(sizeof(kAnchors) / sizeof(Anchor));
 
 // =====================================================================================
+//  Treble register lift.
+//
+//  DELIBERATE VOICING, NOT PHYSICS, and kept separate from the anchor gain column so
+//  the fit above stays interpretable. Only anchors up to MIDI 48 were constrained by
+//  reference audio; everything above is extrapolated, and the top of the keyboard came
+//  out too quiet both by ear and against the one external check available -- the
+//  reference sample library's own per-region volume trims, which balance the top octave
+//  7--10 dB louder relative to the middle than this model does.
+//
+//  This is a conservative first pass: it closes roughly 60% of that gap. Set
+//  kTrebleLiftDbPerSemi to 0 for the raw fitted behaviour.
+static constexpr int   kTrebleLiftKnee      = 60;      // C4; no lift at or below
+static constexpr float kTrebleLiftDbPerSemi = 0.125f;  // +1.5 dB per octave
+static constexpr float kTrebleLiftMaxDb     = 6.0f;    // reached at MIDI 108
+
+inline float trebleLiftGain(int note)
+{
+    const float semis = float(note - kTrebleLiftKnee);
+    if (semis <= 0.f || kTrebleLiftDbPerSemi <= 0.f) return 1.f;
+    const float dB = std::min(semis * kTrebleLiftDbPerSemi, kTrebleLiftMaxDb);
+    return std::pow(10.f, dB * (1.f / 20.f));
+}
+
+// =====================================================================================
 //  Railsback stretch curve, digitised from the CP-80 spec sheet ("Tuning curve of the
 //  CP-80", page 7). Key 1 = A0 = MIDI 21. Bass progressively flat, treble progressively
 //  sharp, crossing zero near middle C, roughly -35 to +30 cents at the extremes.
@@ -771,6 +795,8 @@ public:
         sp.hammerK *= hammerScale * std::pow(vHammer / vRef, hammerRateExponent);
         if (hammerExponent > 0.f) sp.hammerP = hammerExponent;
         v->start(sp, std::min(1.f, std::max(0.f, velocity)), fsInt, fsHost, ++stampCounter);
+        // Applied after start(), on top of the fitted gain, so the two stay separable.
+        v->outGain *= trebleLiftGain(note);
         v->hC = hammerDamping;
         v->hFastScale = hammerFacingScale;
         v->hFastTau = hammerFacingTau;

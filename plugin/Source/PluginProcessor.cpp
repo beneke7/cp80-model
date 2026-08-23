@@ -7,6 +7,24 @@
 namespace {
 constexpr float kPi = 3.14159265358979323846f;
 constexpr float kTwoPi = 2.0f * kPi;
+
+// Velocity sensitivity. The model's full hammer drive is right -- played at MIDI 127
+// it has the bright, glassy attack it should. The problem is getting there: a weighted
+// action on a typical factory curve tops out well short of 127, and the top of the
+// range is exactly where this instrument does its work. Measured at C4, the bottom
+// half of the velocity range spans 32 dB of level while the top half spans only 15,
+// and high-band content still climbs 4 dB between velocity 104 and 122.
+//
+// So treat this input velocity as full drive and clamp above it. This is an input
+// mapping, not a change to the physics -- the hammer model is untouched. Raise it
+// toward 127 if your controller genuinely reaches the top, lower it if it is more
+// conservative; the only cost is dynamic resolution above the threshold.
+constexpr float kVelocityFullDrive = 105.0f / 127.0f;
+
+float shapeVelocity(float midiVelocity)
+{
+    return juce::jmin(1.0f, midiVelocity / kVelocityFullDrive);
+}
 // The engine emits its raw common-voltage scale; offline renders normalise for
 // comparison, so the plugin needs one fixed output calibration.
 //
@@ -125,7 +143,7 @@ void CP80PluginProcessor::processBlock(juce::AudioBuffer<float>& buffer,
         if (message.isNoteOn()) {
             event.type = cp80::AdapterEventType::NoteOn;
             event.note = message.getNoteNumber();
-            event.value = message.getFloatVelocity();
+            event.value = shapeVelocity(message.getFloatVelocity());
         } else if (message.isNoteOff()) {
             event.type = cp80::AdapterEventType::NoteOff;
             event.note = message.getNoteNumber();

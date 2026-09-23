@@ -90,10 +90,13 @@ footer p{margin:.5em 0}
 </figure>
 
 <p class="lede">
-  A <strong>physical model</strong>, not a sample library. Struck strings solved in
-  real time — stiffness, hammer contact and the piezo bridge pickup that gave the
-  CP-80 its bite.
+  A <strong>physical model</strong>, not a sample library. The plugin solves struck
+  strings in real time — stiffness, hammer contact and the piezo bridge pickup that
+  gave the CP-80 its bite. The browser page runs the same model through WebAssembly,
+  with the rendered bank kept as a fallback.
 </p>
+<p class="note"><a href="playground.html">Play the live model in your browser →</a></p>
+<p class="note"><strong>Velocity:</strong> the reference pack has four recorded layers — PP 1–49, MP 50–81, F 82–103 and FF 104–127. The live model remains continuous between them; the browser fallback follows those exact sample boundaries.</p>
 
 <h2>Download</h2>
 <hr class="rule">
@@ -130,7 +133,8 @@ footer p{margin:.5em 0}
     <h3>Hammer contact</h3>
     <p>A nonlinear felt-and-urethane contact law with rate hardening. Hit it harder and
     the contact gets shorter and stiffer, so the tone brightens the way a real hammer
-    does — no velocity crossfades.</p>
+    does — no velocity crossfades. With sustain, a same-pitch retrigger meets the
+    already-moving string state instead of spawning a fresh zero-state string.</p>
   </div>
   <div>
     <h3>Piezo bridge</h3>

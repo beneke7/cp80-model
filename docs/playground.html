@@ -1,0 +1,440 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#ffffe6">
+<title>CP-80 — Musical Typing</title>
+<style>
+:root {
+  --page: #ffffe6;
+  --ink: #1a1a18;
+  --muted: #77766d;
+  --panel: #403b37;
+  --panel-deep: #342f2c;
+  --panel-line: rgba(255, 255, 255, .13);
+  --panel-text: #efede7;
+  --panel-muted: #b9b5ae;
+  --blue: #3b8eea;
+  --blue-hi: #66adff;
+  --green: #2f8738;
+  --white: #f8f7f2;
+  --black: #0b0b0b;
+  --sans: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --display: "Futura", "Futura PT", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+* { box-sizing: border-box; }
+html { background: var(--page); }
+body {
+  margin: 0;
+  color: var(--ink);
+  background: var(--page);
+  font-family: var(--sans);
+  -webkit-font-smoothing: antialiased;
+}
+button, input { font: inherit; }
+button { cursor: pointer; }
+.page { width: min(1320px, 100%); margin: 0 auto; padding: 40px 26px 80px; }
+.site-head { display: flex; align-items: baseline; gap: 18px; }
+.site-head h1 {
+  margin: 0;
+  color: var(--ink);
+  font: 800 clamp(34px, 5vw, 58px)/.95 var(--display);
+  letter-spacing: -.04em;
+}
+.kicker { color: var(--muted); font-size: 13px; font-weight: 700; letter-spacing: .13em; text-transform: uppercase; }
+.head-link { margin-left: auto; color: var(--muted); font: 700 11px/1 var(--mono); letter-spacing: .08em; text-decoration: none; text-transform: uppercase; }
+.head-link:hover { color: #c8462f; }
+.rule { height: 1.5px; margin: 22px 0 32px; border: 0; background: var(--ink); }
+.lede { max-width: 680px; margin: 0 0 28px; color: var(--muted); font-size: 17px; line-height: 1.5; }
+.lede strong { color: var(--ink); font-weight: 700; }
+
+.instrument {
+  overflow: hidden;
+  border: 1px solid var(--ink);
+  border-radius: 6px;
+  background: var(--panel);
+  box-shadow: 0 14px 30px rgba(26, 26, 24, .16);
+}
+.instrument-head {
+  position: relative;
+  min-height: 104px;
+  padding: 19px 25px 17px;
+  border-bottom: 1px solid rgba(0, 0, 0, .25);
+  background: var(--panel-deep);
+}
+.window-title { color: var(--panel-text); font: 700 15px/1 var(--sans); text-align: center; }
+.window-title span { color: var(--panel-muted); font-size: 11px; font-weight: 400; }
+.instrument-toolbar { margin-top: 22px; display: flex; align-items: center; gap: 13px; }
+.toolbar-button {
+  width: 36px;
+  height: 30px;
+  border: 1px solid var(--panel-line);
+  border-radius: 4px;
+  background: rgba(255, 255, 255, .06);
+  color: var(--panel-muted);
+  font-size: 20px;
+  line-height: 1;
+}
+.toolbar-button:hover { border-color: var(--blue-hi); color: var(--panel-text); }
+.mini-wrap { width: min(456px, 54vw); height: 30px; margin: 0 auto; }
+.mini-keyboard { position: relative; width: 100%; height: 30px; overflow: hidden; border: 1px solid rgba(0, 0, 0, .5); border-radius: 4px; background: #22201e; }
+.mini-white-row, .mini-black-row { position: absolute; inset: 0; display: flex; }
+.mini-white-row { gap: 1px; }
+.mini-white { position: relative; flex: 1; border: 0; background: #e8e6df; }
+.mini-white.selected { background: var(--blue); }
+.mini-black-row { pointer-events: none; }
+.mini-black { position: absolute; top: 0; width: calc(100% / 52 * .62); height: 20px; transform: translateX(-50%); border-radius: 0 0 2px 2px; background: #111; }
+.mini-black.selected { background: var(--blue-hi); }
+.range-label { min-width: 76px; color: var(--panel-muted); font: 700 10px/1 var(--mono); letter-spacing: .08em; text-align: right; text-transform: uppercase; }
+
+.keyboard-stage { padding: 26px 25px 22px; background: var(--panel); }
+.play-row { display: grid; grid-template-columns: 145px minmax(0, 1fr) 145px; align-items: start; gap: 19px; }
+.sustain {
+  min-height: 94px;
+  padding: 13px 12px;
+  border: 0;
+  border-radius: 12px;
+  background: var(--green);
+  color: #071009;
+  box-shadow: inset 0 -3px 0 rgba(0, 0, 0, .18), 0 2px 1px rgba(0, 0, 0, .14);
+  text-align: center;
+}
+.sustain:hover, .sustain[aria-pressed="true"] { background: #419b48; color: white; }
+.sustain strong { display: block; font: 700 15px/1 var(--sans); letter-spacing: .02em; }
+.sustain kbd { display: block; margin-top: 19px; color: inherit; font: 700 18px/1 var(--sans); opacity: .65; }
+.keys-viewport { min-width: 0; overflow-x: auto; padding: 0 0 9px; scrollbar-color: rgba(255,255,255,.35) transparent; }
+.keys { position: relative; min-width: 700px; height: clamp(155px, 18vw, 220px); user-select: none; touch-action: none; }
+.white-row, .black-row { position: absolute; inset: 0; display: flex; }
+.white-row { gap: 2px; }
+.black-row { pointer-events: none; }
+.key { padding: 0; touch-action: none; -webkit-tap-highlight-color: transparent; }
+.white-key {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  border: 1px solid #b8b4ad;
+  border-top-color: #fff;
+  border-radius: 0 0 5px 5px;
+  background: linear-gradient(90deg, #eee 0%, var(--white) 50%, #d2d0ca 100%);
+  box-shadow: 0 4px 0 #b3b0a9;
+}
+.white-key:first-child { border-radius: 4px 0 5px 5px; }
+.white-key:last-child { border-radius: 0 4px 5px 5px; }
+.white-key:hover, .white-key.active { background: linear-gradient(90deg, #b7dcff, #fff 55%, #86c2f7); }
+.white-key.active { box-shadow: inset 0 -9px 0 rgba(59, 142, 234, .4), 0 1px 0 #b3b0a9; }
+.black-key {
+  position: absolute;
+  top: 0;
+  z-index: 2;
+  width: calc(100% / 11 * .62);
+  height: 61%;
+  transform: translateX(-50%);
+  border: 1px solid #050505;
+  border-top-color: #55514c;
+  border-radius: 0 0 5px 5px;
+  background: linear-gradient(90deg, #050505, #272522 52%, #080808);
+  box-shadow: 0 4px 3px rgba(0, 0, 0, .4), inset 0 1px 0 rgba(255, 255, 255, .12);
+  pointer-events: auto;
+}
+.black-key:hover, .black-key.active { background: linear-gradient(90deg, #155485, #4b9ce9 50%, #123c62); }
+.black-key.active { box-shadow: inset 0 -8px 0 rgba(59, 142, 234, .45), 0 3px 2px rgba(0, 0, 0, .45); }
+.key-label { position: absolute; bottom: 10px; left: 0; width: 100%; color: #6b6964; font: 10px/1 var(--mono); text-align: center; }
+.key-label strong { display: block; color: #282622; font-size: 11px; }
+.black-key .key-label { bottom: 7px; color: rgba(255, 255, 255, .7); font-size: 8px; }
+.black-key .key-label strong { color: inherit; font-size: 8px; }
+.side-controls { display: grid; gap: 16px; color: var(--panel-muted); font: 700 11px/1.2 var(--sans); }
+.side-controls output { color: var(--panel-text); font-size: 18px; }
+.octave-row { display: grid; grid-template-columns: 1fr 28px 28px; align-items: center; gap: 5px; }
+.octave-row span { grid-column: 1 / -1; }
+.octave-row button { height: 28px; border: 1px solid var(--panel-line); border-radius: 3px; background: rgba(255,255,255,.08); color: var(--panel-text); font-size: 17px; line-height: 1; }
+.octave-row button:hover { border-color: var(--blue-hi); background: rgba(59,142,234,.25); }
+.velocity-row span { display: block; margin-bottom: 8px; }
+.velocity-row output { display: inline-block; min-width: 35px; }
+.velocity-row .layer-output { min-width: 0; margin-left: 3px; color: var(--panel-muted); font-size: 10px; }
+.velocity-row input { width: 100%; margin: 2px 0 0; accent-color: var(--blue); }
+.auto-button { margin-left: 5px; padding: 3px 5px; border: 1px solid var(--panel-line); border-radius: 3px; background: transparent; color: var(--panel-muted); font: 700 9px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; }
+.auto-button[aria-pressed="true"] { border-color: var(--blue-hi); background: var(--blue); color: white; }
+.shortcut-row { margin-top: 14px; color: var(--panel-muted); font: 10px/1.4 var(--mono); letter-spacing: .03em; text-align: center; }
+.shortcut-row b { color: var(--panel-text); font-weight: 700; }
+.status-line { min-height: 17px; margin-top: 10px; color: var(--panel-muted); font: 10px/1.4 var(--mono); text-align: center; }
+.status-line.ready { color: var(--blue-hi); }
+.footer { display: flex; justify-content: space-between; gap: 20px; margin-top: 22px; color: var(--muted); font: 12px/1.5 var(--sans); }
+.footer a { color: var(--ink); }
+@media (max-width: 760px) {
+  .page { padding: 28px 14px 60px; }
+  .site-head { display: block; }
+  .kicker { display: block; margin-top: 8px; }
+  .head-link { display: inline-block; margin-top: 17px; }
+  .rule { margin: 17px 0 24px; }
+  .instrument-head { padding-right: 15px; padding-left: 15px; }
+  .instrument-toolbar { gap: 7px; }
+  .mini-wrap { width: auto; flex: 1; }
+  .range-label { min-width: 60px; font-size: 8px; }
+  .keyboard-stage { padding-right: 12px; padding-left: 12px; }
+  .play-row { grid-template-columns: 92px minmax(0, 1fr); gap: 12px; }
+  .sustain { min-height: 78px; }
+  .sustain kbd { margin-top: 14px; font-size: 14px; }
+  .side-controls { grid-column: 1 / -1; grid-template-columns: 1fr 1.4fr; align-items: end; gap: 18px; }
+  .shortcut-row { margin-top: 10px; }
+  .footer { display: block; }
+  .footer a { display: block; margin-top: 7px; }
+}
+</style>
+</head>
+<body>
+<main class="page">
+  <header class="site-head">
+    <h1>CP-80</h1><span class="kicker">Electric Grand / Musical Typing</span>
+    <a class="head-link" href="index.html">about →</a>
+  </header>
+  <hr class="rule">
+  <p class="lede">A compact browser window into the <strong>live physical model</strong>. The WebAssembly engine handles the notes; the rendered bank remains a fallback if the module is not built.</p>
+
+  <section class="instrument" aria-label="CP-80 musical typing">
+    <div class="instrument-head">
+      <div class="window-title">CP-80 — Musical Typing <span>· live WASM model</span></div>
+      <div class="instrument-toolbar">
+        <button class="toolbar-button" id="octave-down-top" type="button" aria-label="Lower octave">‹</button>
+        <div class="mini-wrap"><div class="mini-keyboard" id="mini-keyboard" aria-hidden="true"></div></div>
+        <button class="toolbar-button" id="octave-up-top" type="button" aria-label="Raise octave">›</button>
+        <span class="range-label" id="range-label">C2 — F3</span>
+      </div>
+    </div>
+
+    <div class="keyboard-stage">
+      <div class="play-row">
+        <button class="sustain" id="sustain" type="button" aria-pressed="false"><strong>SUSTAIN</strong><kbd>tab</kbd></button>
+        <div class="keys-viewport"><div class="keys" id="keys" aria-label="Playable CP-80 keyboard"></div></div>
+        <div class="side-controls">
+          <div class="octave-row"><span>Octave: <output id="octave-value">C2</output></span><button id="octave-down" type="button" aria-label="Lower octave">−</button><button id="octave-up" type="button" aria-label="Raise octave">+</button></div>
+          <label class="velocity-row"><span>Velocity: <output id="velocity-value">98</output><output class="layer-output" id="velocity-layer">F layer</output><button class="auto-button" id="auto-velocity" type="button" aria-pressed="true">auto</button></span><input id="velocity" type="range" min="1" max="127" value="98"></label>
+        </div>
+      </div>
+      <div class="shortcut-row"><b>A W S E D F T G Y H U J K O L P</b> · computer keys &nbsp; / &nbsp; <b>↑ ↓</b> octave &nbsp; / &nbsp; <b>tab</b> sustain</div>
+      <div class="status-line" id="status-line">click a key to start the audio</div>
+    </div>
+  </section>
+
+  <footer class="footer"><span>Local audition · live model with render-bank fallback · stateful sustain retriggers · no reverb or corrective EQ · PP 1–49 / MP 50–81 / F 82–103 / FF 104–127</span><a href="index.html">CP-80 / electric grand</a></footer>
+</main>
+
+<script>
+(() => {
+  'use strict';
+  const MIN_NOTE = 21, MAX_NOTE = 108, VISIBLE_NOTES = 19;
+  const BLACK = new Set([1, 3, 6, 8, 10]);
+  const NAMES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+  const LAYERS = [
+    { tag: 'PP', lo: 1, hi: 49, midpoint: 25 / 127 },
+    { tag: 'MP', lo: 50, hi: 81, midpoint: 65.5 / 127 },
+    { tag: 'F', lo: 82, hi: 103, midpoint: 92.5 / 127 },
+    { tag: 'FF', lo: 104, hi: 127, midpoint: 115.5 / 127 }
+  ];
+  const VELS = Object.fromEntries(LAYERS.map(({ tag, midpoint }) => [tag, midpoint]));
+  const BANK = {
+    27: ['F', 'FF', 'MP', 'PP'], 34: ['MP', 'PP'], 35: ['F', 'FF'], 42: ['F', 'FF', 'MP', 'PP'],
+    46: ['F', 'FF', 'MP'], 50: ['F', 'FF', 'MP', 'PP'], 53: ['F', 'FF', 'MP'], 57: ['F', 'FF', 'MP', 'PP'],
+    60: ['F', 'FF', 'MP'], 63: ['F', 'FF', 'MP', 'PP'], 65: ['F', 'FF', 'MP', 'PP'], 68: ['F', 'FF', 'MP', 'PP'],
+    72: ['F', 'FF', 'MP', 'PP'], 76: ['F', 'FF', 'MP'], 80: ['F', 'FF', 'MP', 'PP'], 82: ['F', 'FF', 'MP'],
+    85: ['F', 'FF', 'MP', 'PP'], 88: ['F', 'FF', 'MP'], 91: ['F', 'FF', 'MP', 'PP'], 95: ['F', 'FF', 'MP'],
+    97: ['F', 'FF', 'MP', 'PP'], 102: ['F', 'FF', 'MP', 'PP'], 107: ['F', 'FF', 'MP', 'PP']
+  };
+  const SAMPLE_NOTES = Object.keys(BANK).map(Number);
+  const COMPUTER_KEYS = { a: 0, w: 1, s: 2, e: 3, d: 4, f: 5, t: 6, g: 7, y: 8, z: 8, h: 9, u: 10, j: 11, k: 12, o: 13, l: 14, p: 15, ';': 16, "'": 17 };
+  const SAMPLE_ROOT = '../out/model-reference-matched/';
+  const $ = (id) => document.getElementById(id);
+  const keys = $('keys'), mini = $('mini-keyboard'), octaveValue = $('octave-value'), rangeLabel = $('range-label');
+  const velocityInput = $('velocity'), velocityValue = $('velocity-value'), velocityLayer = $('velocity-layer'), autoButton = $('auto-velocity');
+  const sustainButton = $('sustain'), statusLine = $('status-line');
+  let octave = 2, velocity = 98, autoVelocity = true, manualSustain = false, tabSustain = false, audio = null, audioPromise = null;
+  let introStarted = false;
+  const active = new Map(), held = new Set(), pending = new Map(), sustained = new Set(), samplePromises = new Map(), pressed = new Set();
+
+  // The short recurring Vulfpeck intro lick: clipped Db, Dm and Gbm stabs.
+  // It is a one-shot audition cue, started by the first user gesture.
+  const STARTUP_RIFF = [
+    { at: 0.00, length: 0.22, offsets: [1, 8, 13],    velocity: 92 },
+    { at: 0.25, length: 0.14, offsets: [17],           velocity: 78 },
+    { at: 0.49, length: 0.22, offsets: [2, 5, 9],     velocity: 88 },
+    { at: 0.74, length: 0.14, offsets: [14],           velocity: 76 },
+    { at: 0.98, length: 0.22, offsets: [6, 9, 13, 17], velocity: 90 },
+    { at: 1.23, length: 0.14, offsets: [18],           velocity: 80 },
+    { at: 1.48, length: 0.48, offsets: [1, 8, 13, 17], velocity: 94 }
+  ];
+
+  const clamp = (x, lo, hi) => Math.max(lo, Math.min(hi, x));
+  const name = (note) => `${NAMES[note % 12]}${Math.floor(note / 12) - 1}`;
+  const black = (note) => BLACK.has(note % 12);
+  const nearest = (note) => SAMPLE_NOTES.reduce((a, b) => Math.abs(b - note) < Math.abs(a - note) ? b : a, SAMPLE_NOTES[0]);
+  const layerFor = (value) => LAYERS.find(({ lo, hi }) => value >= lo && value <= hi) || LAYERS[LAYERS.length - 1];
+  const tagFor = (value, tags) => {
+    const exact = layerFor(value).tag;
+    return tags.includes(exact) ? exact : tags.reduce((a, b) => Math.abs(VELS[b] - value / 127) < Math.abs(VELS[a] - value / 127) ? b : a, tags[0]);
+  };
+  const firstNote = () => (octave + 1) * 12;
+  const lastNote = () => firstNote() + VISIBLE_NOTES - 1;
+  const sustainOn = () => manualSustain || tabSustain;
+
+  function setStatus(message, ready = false) { statusLine.textContent = message; statusLine.classList.toggle('ready', ready); }
+  function updateVelocity(value) { velocity = clamp(Math.round(value), 1, 127); velocityInput.value = velocity; velocityValue.textContent = velocity; velocityLayer.textContent = `${layerFor(velocity).tag} layer`; }
+  function updateVelocityMode() { autoButton.setAttribute('aria-pressed', String(autoVelocity)); velocityInput.disabled = autoVelocity; }
+  function updateSustain() { sustainButton.setAttribute('aria-pressed', String(sustainOn())); }
+  function releaseSustained() {
+    if (sustainOn()) return;
+    for (const note of sustained) finish(note);
+    sustained.clear();
+  }
+  function setManualSustain(on) { const wasOn = sustainOn(); manualSustain = Boolean(on); updateSustain(); if (wasOn && !sustainOn()) releaseSustained(); }
+  function setOctave(next) {
+    const nextOctave = clamp(next, 0, 6);
+    if (nextOctave !== octave) releaseAll();
+    octave = nextOctave;
+    octaveValue.textContent = `C${octave}`;
+    rangeLabel.textContent = `${name(firstNote())} — ${name(lastNote())}`;
+    document.querySelectorAll('.mini-white, .mini-black').forEach((key) => key.classList.toggle('selected', Number(key.dataset.note) >= firstNote() && Number(key.dataset.note) <= lastNote()));
+    buildKeys();
+  }
+  function keyElement(note) { return document.querySelector(`#keys [data-note="${note}"]`); }
+
+  function buildKeys() {
+    keys.replaceChildren();
+    const whiteRow = document.createElement('div'), blackRow = document.createElement('div');
+    whiteRow.className = 'white-row'; blackRow.className = 'black-row';
+    const start = firstNote(), end = lastNote();
+    const whiteCount = Array.from({ length: VISIBLE_NOTES }, (_, i) => start + i).filter((note) => !black(note)).length;
+    let whiteIndex = 0;
+    for (let note = start; note <= end; note++) {
+      const isBlack = black(note), key = document.createElement('button');
+      key.type = 'button'; key.dataset.note = note; key.className = `key ${isBlack ? 'black-key' : 'white-key'}`; key.setAttribute('aria-label', name(note));
+      const computerIndex = note - start;
+      const computer = computerIndex < 18 ? Object.keys(COMPUTER_KEYS).find((keyName) => COMPUTER_KEYS[keyName] === computerIndex) : '';
+      key.innerHTML = `<span class="key-label"><strong>${note % 12 === 0 ? name(note) : ''}</strong>${computer || ''}</span>`;
+      if (isBlack) key.style.left = `${whiteIndex * 100 / whiteCount}%`; else whiteIndex++;
+      (isBlack ? blackRow : whiteRow).appendChild(key); attachPointer(key);
+    }
+    keys.append(whiteRow, blackRow);
+  }
+  function buildMini() {
+    const whiteRow = document.createElement('div'), blackRow = document.createElement('div');
+    whiteRow.className = 'mini-white-row'; blackRow.className = 'mini-black-row';
+    const whiteCount = Array.from({ length: MAX_NOTE - MIN_NOTE + 1 }, (_, i) => MIN_NOTE + i).filter((note) => !black(note)).length;
+    let whiteIndex = 0;
+    for (let note = MIN_NOTE; note <= MAX_NOTE; note++) {
+      const item = document.createElement('i'); item.dataset.note = note;
+      if (black(note)) { item.className = 'mini-black'; item.style.left = `${whiteIndex * 100 / whiteCount}%`; blackRow.appendChild(item); }
+      else { item.className = 'mini-white'; whiteRow.appendChild(item); whiteIndex++; }
+    }
+    mini.append(whiteRow, blackRow);
+  }
+  function velocityAt(key, y) { if (!autoVelocity) return velocity; const rect = key.getBoundingClientRect(); return Math.round(127 - clamp((y - rect.top) / rect.height, 0, 1) * 102); }
+  function attachPointer(key) {
+    key.addEventListener('pointerdown', (event) => { event.preventDefault(); key.setPointerCapture(event.pointerId); noteOn(Number(key.dataset.note), velocityAt(key, event.clientY), key); });
+    key.addEventListener('pointerup', () => noteOff(Number(key.dataset.note)));
+    key.addEventListener('pointercancel', () => noteOff(Number(key.dataset.note)));
+    key.addEventListener('pointerleave', (event) => { if (event.buttons && active.has(Number(key.dataset.note))) noteOff(Number(key.dataset.note)); });
+  }
+  function playStartupIntro() {
+    if (introStarted || !audio) return;
+    introStarted = true;
+    STARTUP_RIFF.forEach((hit) => {
+      setTimeout(() => {
+        const notes = hit.offsets.map((offset) => firstNote() + offset);
+        notes.forEach((note) => noteOn(note, hit.velocity, keyElement(note)));
+        setTimeout(() => notes.forEach(noteOff), hit.length * 1000);
+      }, hit.at * 1000);
+    });
+  }
+  async function initAudio() {
+    if (audio) return audio.context.resume();
+    if (!audioPromise) {
+      audioPromise = (async () => {
+        const Context = window.AudioContext || window.webkitAudioContext;
+        if (!Context) throw new Error('Web Audio unavailable');
+        const context = new Context(), master = context.createGain(), analyser = context.createAnalyser();
+        context.resume();
+        analyser.fftSize = 64; analyser.smoothingTimeConstant = .8; master.connect(analyser).connect(context.destination);
+        try {
+          if (!context.audioWorklet || !window.AudioWorkletNode) throw new Error('AudioWorklet unavailable');
+          await context.audioWorklet.addModule(new URL('cp80-worklet.js', document.baseURI));
+          const node = new AudioWorkletNode(context, 'cp80-model', { numberOfInputs: 0, numberOfOutputs: 1, outputChannelCount: [2] });
+          await new Promise((resolve, reject) => {
+            const timeout = setTimeout(() => reject(new Error('WASM model startup timeout')), 5000);
+            node.port.onmessage = ({ data }) => {
+              if (data.type === 'ready') { clearTimeout(timeout); resolve(); }
+              if (data.type === 'error') { clearTimeout(timeout); reject(new Error(data.message)); }
+            };
+          });
+          master.gain.value = .65;
+          node.connect(master);
+          audio = { context, master, analyser, node, mode: 'model' };
+          setStatus('live WASM model ready', true);
+        } catch (error) {
+          // Keep the audition usable when docs/ is opened before `make web`.
+          master.gain.value = .18;
+          audio = { context, master, analyser, mode: 'samples' };
+          setStatus('WASM unavailable · rendered bank ready', true);
+          console.warn(error);
+        }
+      })();
+    }
+    try { await audioPromise; } finally { audioPromise = null; }
+    return audio.context.resume();
+  }
+  async function loadSample(note, value) {
+    const sourceNote = nearest(note), tags = BANK[sourceNote], tag = tagFor(value, tags), file = `${String(sourceNote).padStart(3, '0')}-${name(sourceNote)}-${tag}.flac`, cacheKey = `${sourceNote}-${tag}`;
+    if (!samplePromises.has(cacheKey)) samplePromises.set(cacheKey, fetch(SAMPLE_ROOT + encodeURIComponent(file)).then((response) => { if (!response.ok) throw new Error(file); return response.arrayBuffer(); }).then((data) => audio.context.decodeAudioData(data)));
+    return { buffer: await samplePromises.get(cacheKey), sourceNote };
+  }
+  async function noteOn(note, value, key) {
+    held.add(note); sustained.delete(note); const request = {}; pending.set(note, request);
+    try { await initAudio(); } catch (_) { held.delete(note); pending.delete(note); key.classList.remove('active'); return; }
+    playStartupIntro();
+    if (active.has(note)) finish(note);
+    key.classList.add('active'); setStatus(`${name(note)} · velocity ${Math.round(value)}`, true);
+    if (pending.get(note) !== request) { key.classList.remove('active'); return; }
+    pending.delete(note);
+    if (!held.has(note) && !sustainOn()) { key.classList.remove('active'); return; }
+    if (audio.mode === 'model') {
+      audio.node.port.postMessage({ type: 'event', kind: 'noteOn', note, velocity: value / 127 });
+      active.set(note, { model: true, key });
+      return;
+    }
+    try {
+      const sample = await loadSample(note, value);
+      const source = audio.context.createBufferSource(), gain = audio.context.createGain(), now = audio.context.currentTime;
+      source.buffer = sample.buffer; source.playbackRate.value = 2 ** ((note - sample.sourceNote) / 12); gain.gain.setValueAtTime(.0001, now); gain.gain.exponentialRampToValueAtTime(.9, now + .006); source.connect(gain).connect(audio.master);
+      const voice = { source, gain, key }; active.set(note, voice); source.onended = () => { if (active.get(note) === voice) active.delete(note); key.classList.remove('active'); }; source.start(now);
+    } catch (error) { key.classList.remove('active'); setStatus('Render bank unavailable — serve the repository root.', false); console.error(error); }
+  }
+  function finish(note) {
+    const voice = active.get(note); if (!voice) return; active.delete(note);
+    if (voice.model) { audio.node.port.postMessage({ type: 'event', kind: 'noteOff', note }); voice.key.classList.remove('active'); return; }
+    const now = audio.context.currentTime; voice.gain.gain.cancelScheduledValues(now); voice.gain.gain.setTargetAtTime(.0001, now, .075); try { voice.source.stop(now + .5); } catch (_) {} voice.key.classList.remove('active');
+  }
+  function noteOff(note) { held.delete(note); if (!active.has(note)) { if (sustainOn()) sustained.add(note); return; } if (sustainOn()) sustained.add(note); else finish(note); }
+  function releaseAll() { held.clear(); pending.clear(); for (const note of active.keys()) finish(note); sustained.clear(); document.querySelectorAll('.key.active').forEach((key) => key.classList.remove('active')); }
+
+  function computerNote(index) { return firstNote() + index; }
+  document.addEventListener('keydown', (event) => {
+    if (event.code === 'Tab') { event.preventDefault(); if (!event.repeat) { tabSustain = true; updateSustain(); } return; }
+    if (event.code === 'ArrowUp') { event.preventDefault(); setOctave(octave + 1); return; }
+    if (event.code === 'ArrowDown') { event.preventDefault(); setOctave(octave - 1); return; }
+    const key = event.key.toLowerCase(), index = COMPUTER_KEYS[key];
+    if (index == null || pressed.has(key)) return; pressed.add(key); const note = computerNote(index), element = keyElement(note); if (element) noteOn(note, velocity, element);
+  });
+  document.addEventListener('keyup', (event) => {
+    if (event.code === 'Tab') { const wasOn = sustainOn(); tabSustain = false; updateSustain(); if (wasOn && !sustainOn()) releaseSustained(); return; }
+    const key = event.key.toLowerCase(), index = COMPUTER_KEYS[key]; if (index == null) return; pressed.delete(key); noteOff(computerNote(index));
+  });
+  $('octave-down').addEventListener('click', () => setOctave(octave - 1)); $('octave-up').addEventListener('click', () => setOctave(octave + 1));
+  $('octave-down-top').addEventListener('click', () => setOctave(octave - 1)); $('octave-up-top').addEventListener('click', () => setOctave(octave + 1));
+  autoButton.addEventListener('click', () => { autoVelocity = !autoVelocity; autoButton.setAttribute('aria-pressed', String(autoVelocity)); velocityInput.disabled = autoVelocity; });
+  velocityInput.addEventListener('input', () => updateVelocity(velocityInput.value)); sustainButton.addEventListener('click', () => setManualSustain(!manualSustain));
+  buildMini(); setOctave(octave); updateVelocity(velocity); updateVelocityMode();
+})();
+</script>
+</body>
+</html>
